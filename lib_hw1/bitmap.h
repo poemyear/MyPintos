@@ -23,6 +23,9 @@ void bitmap_reset (struct bitmap *, size_t idx);
 void bitmap_flip (struct bitmap *, size_t idx);
 bool bitmap_test (const struct bitmap *, size_t idx);
 
+/* Coursework. */
+struct bitmap *bitmap_expand (struct bitmap *, int);
+
 /* Setting and testing multiple bits. */
 void bitmap_set_all (struct bitmap *, bool);
 void bitmap_set_multiple (struct bitmap *, size_t start, size_t cnt, bool);
