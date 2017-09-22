@@ -371,6 +371,6 @@ bitmap_write (const struct bitmap *b, struct file *file)
 void
 bitmap_dump (const struct bitmap *b) 
 {
-  hex_dump (0, b->bits, byte_cnt (b->cnt)/2, false);
+  hex_dump (0, b->bits, byte_cnt (b->bit_cnt)/2, false);
 }
 
