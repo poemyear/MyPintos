@@ -167,7 +167,7 @@ bitmap_mark (struct bitmap *b, size_t bit_idx)
   /* This is equivalent to `b->bits[idx] |= mask' except that it
      is guaranteed to be atomic on a uniprocessor machine.  See
      the description of the OR instruction in [IA32-v2b]. */
-  asm ("orl %1, %0" : "=m" (b->bits[idx]) : "r" (mask) : "cc");
+  asm ("orl %k1, %k0" : "=m" (b->bits[idx]) : "r" (mask) : "cc");
 }
 
 /* Atomically sets the bit numbered BIT_IDX in B to false. */
@@ -180,7 +180,7 @@ bitmap_reset (struct bitmap *b, size_t bit_idx)
   /* This is equivalent to `b->bits[idx] &= ~mask' except that it
      is guaranteed to be atomic on a uniprocessor machine.  See
      the description of the AND instruction in [IA32-v2a]. */
-  asm ("andl %1, %0" : "=m" (b->bits[idx]) : "r" (~mask) : "cc");
+  asm ("andl %k1, %k0" : "=m" (b->bits[idx]) : "r" (~mask) : "cc");
 }
 
 /* Atomically toggles the bit numbered IDX in B;
@@ -195,7 +195,7 @@ bitmap_flip (struct bitmap *b, size_t bit_idx)
   /* This is equivalent to `b->bits[idx] ^= mask' except that it
      is guaranteed to be atomic on a uniprocessor machine.  See
      the description of the XOR instruction in [IA32-v2b]. */
-  asm ("xorl %1, %0" : "=m" (b->bits[idx]) : "r" (mask) : "cc");
+  asm ("xorl %k1, %k0" : "=m" (b->bits[idx]) : "r" (mask) : "cc");
 }
 
 /* Returns the value of the bit numbered IDX in B. */
@@ -371,6 +371,6 @@ bitmap_write (const struct bitmap *b, struct file *file)
 void
 bitmap_dump (const struct bitmap *b) 
 {
-  hex_dump (0, b->bits, byte_cnt (b->bit_cnt), false);
+  hex_dump (0, b->bits, byte_cnt (b->cnt)/2, false);
 }
 
