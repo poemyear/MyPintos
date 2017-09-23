@@ -4,41 +4,40 @@ int main (void) {
 	char cmd[255]={0, };
 	char *ptr;
 	int i;
-	bool isQuit=false;
+	bool quit=false;
 
-	while(!isQuit){
-		get_string(cmd);
-		switch (get_command(cmd)) {
+	while (!quit) {
+		GetString(cmd);
+		switch (GetCommand(cmd)) {
 			case QUIT:
-				isQuit=true;
-			break;
+				quit=true;
+				break;
 			case CREATE:
-			printf("create\n");
-			break;
+				DoCreate();
+				break;
 			case DELETE:
-			printf("delete\n");
-			break;
+				DoDelete();
+				break;
 			case DUMPDATA:
-			printf("dumpadata\n");
-			break;
+				DoDumpdata();
+				break;
 			case LIST:
-			printf("list\n");
-			break;
+				DoList();
+				break;
 			case HASH:
-			printf("hash\n");
-			break;
+				DoHash();
+				break;
 			case BITMAP:
-			printf("bitmap\n");
-			break;
+				DoBitmap();
+				break;
 			default:
-			break;
+				break;
 		}
 	}
 	return 0;
 }
 
-void get_string(char *str)
-{	
+void GetString(char *str) {
 	int i;
 	for(i=0;i<100;i++)
 	{
@@ -51,8 +50,11 @@ void get_string(char *str)
 	}
 }
 
-int get_command(char *cmd) 
-{
+char* GetArg() {
+	return strtok (NULL,  " \t");
+}
+
+int GetCommand(char *cmd) {
 	char * ptr = strtok (cmd, "_ \t");
 	if (cmd[0]=='\0')
 		return -1;
@@ -72,3 +74,135 @@ int get_command(char *cmd)
 		return BITMAP;
 	return -1;
 }
+
+void DoCreate() {
+	char *arg = GetArg();
+	if (arg == NULL)
+		return ;
+	if (strcmp(arg, "list")==0) {
+
+	} else if (strcmp(arg, "hashtable")==0) {
+
+	} else if (strcmp(arg, "bitmap")==0) {
+
+	}
+}
+
+void DoDelete() {
+	char *arg = GetArg();
+	if (arg == NULL)
+		return ;
+}
+
+void DoDumpdata() {
+	char *arg = GetArg();
+	if (arg == NULL)
+		return ;
+}
+
+void DoList() {
+	char *subcmd = GetArg();
+	if (subcmd == NULL)
+		return ;
+	if (strcmp(subcmd,"insert")==0) {
+	}
+	else if (strcmp(subcmd,"splice")==0) {
+	}
+	else if (strcmp(subcmd,"push_front")==0) {
+	}
+	else if (strcmp(subcmd,"push_back")==0) {
+	}
+	else if (strcmp(subcmd,"remove")==0) {
+	}
+	else if (strcmp(subcmd,"pop_front")==0) {
+	}
+	else if (strcmp(subcmd,"pop_back")==0) {
+	}
+	else if (strcmp(subcmd,"front")==0) {
+	}
+	else if (strcmp(subcmd,"back")==0) {
+	}
+	else if (strcmp(subcmd,"size")==0) {
+	}
+	else if (strcmp(subcmd,"empty")==0) {
+	}
+	else if (strcmp(subcmd,"reverse")==0) {
+	}
+	else if (strcmp(subcmd,"sort")==0) {
+	}
+	else if (strcmp(subcmd,"insert_ordered")==0) {
+	}
+	else if (strcmp(subcmd,"unique")==0) {
+	}
+	else if (strcmp(subcmd,"max")==0) {
+	}
+	else if (strcmp(subcmd,"min")==0) {
+	}
+	else if (strcmp(subcmd,"swap")==0) {
+	}
+	else if (strcmp(subcmd,"shuffle")==0) {
+	}
+}
+
+void DoHash() {
+	char *subcmd = GetArg();
+	if (subcmd == NULL)
+		return ;
+	if (strcmp(subcmd,"insert")==0) {
+	}
+	else if (strcmp(subcmd,"replace")==0) {
+	}
+	else if (strcmp(subcmd,"find")==0) {
+	}
+	else if (strcmp(subcmd,"delete")==0) {
+	}
+	else if (strcmp(subcmd,"clear")==0) {
+	}
+	else if (strcmp(subcmd,"size")==0) {
+	}
+	else if (strcmp(subcmd,"empty")==0) {
+	}
+	else if (strcmp(subcmd,"apply")==0) {
+	}
+}
+
+void DoBitmap() {
+	char *subcmd = GetArg();
+	if (subcmd == NULL)
+		return ;
+	if (strcmp(subcmd,"size")==0) {
+	}
+	else if (strcmp(subcmd,"set")==0) {
+	}
+	else if (strcmp(subcmd,"mark")==0) {
+	}
+	else if (strcmp(subcmd,"reset")==0) {
+	}
+	else if (strcmp(subcmd,"flip")==0) {
+	}
+	else if (strcmp(subcmd,"test")==0) {
+	}
+	else if (strcmp(subcmd,"set_all")==0) {
+	}
+	else if (strcmp(subcmd,"set_multiple")==0) {
+	}
+	else if (strcmp(subcmd,"count")==0) {
+	}
+	else if (strcmp(subcmd,"contains")==0) {
+	}
+	else if (strcmp(subcmd,"any")==0) {
+	}
+	else if (strcmp(subcmd,"none")==0) {
+	}
+	else if (strcmp(subcmd,"all")==0) {
+	}
+	else if (strcmp(subcmd,"scan")==0) {
+	}
+	else if (strcmp(subcmd,"scan_and_flip")==0) {
+	}
+	else if (strcmp(subcmd,"dump")==0) {
+	}
+	else if (strcmp(subcmd,"expand")==0) {
+	}
+}
+

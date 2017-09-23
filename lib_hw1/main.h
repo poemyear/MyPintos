@@ -15,6 +15,15 @@
 #define BITMAP                  6
 
 
-void get_string(char *);
-int get_command();
+void GetString(char *);
+char* GetArg();
+int GetCommand();
+
+void DoCreate();
+void DoDelete();
+void DoDumpdata();
+void DoList();
+void DoHash();
+void DoBitmap();
+
 
