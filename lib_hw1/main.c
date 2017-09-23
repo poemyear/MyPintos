@@ -77,14 +77,26 @@ int GetCommand(char *cmd) {
 
 void DoCreate() {
 	char *arg = GetArg();
+	char *name = GetArg();
+	int idx=0;
+	int num=0;
 	if (arg == NULL)
 		return ;
 	if (strcmp(arg, "list")==0) {
-
+		idx = ++list_idx;
+		strcpy(my_list[idx].name, name);
+		list_init(&(my_list[idx].os_list));
 	} else if (strcmp(arg, "hashtable")==0) {
-
+		idx = ++hash_idx;
+		//		strcpy(my_hash[idx].name, name);
+		//		hash_init(&(my_hash[idx].os_hash));
 	} else if (strcmp(arg, "bitmap")==0) {
+		idx = ++bitmap_idx;
+		sscanf(GetArg(),"%d", &num);
 
+		printf("%s %d\n", name, num);
+		//		strcpy(my_bitmap[idx].name, name);
+		//		bitmap_init(&(my_bitmap[idx].os_bitmap));
 	}
 }
 
@@ -95,9 +107,18 @@ void DoDelete() {
 }
 
 void DoDumpdata() {
+	int idx=0;
 	char *arg = GetArg();
 	if (arg == NULL)
 		return ;
+
+	// list
+	idx = FindList(arg);
+	if (idx != -1) {
+		DumpList(&(my_list[idx].os_list));
+	}
+	printf("%d", idx);
+
 }
 
 void DoList() {
@@ -206,3 +227,39 @@ void DoBitmap() {
 	}
 }
 
+int FindList(char *name) {
+	int i=0;
+	for (i=0; i<list_idx+1; i++) {
+		if (strcmp(name, my_list[i].name)==0)
+			return i;
+	}
+	return -1;
+}
+
+int FindHash(char *name) {
+	int i=0;
+	for (i=0; i<hash_idx+1; i++) {
+		if (strcmp(name, my_hash[i].name)==0)
+			return i;
+	}
+	return -1;
+}
+
+int FindBitmap(char *name) {
+	int i=0;
+	for (i=0; i<bitmap_idx+1; i++) {
+		if (strcmp(name, my_bitmap[i].name)==0)
+			return i;
+	}
+	return -1;
+}
+
+void DumpList(struct list *target) {
+}
+
+void DumpHash(struct hash *target) {
+}
+
+void DumpBitmap(struct bitmap *target) {
+
+}
