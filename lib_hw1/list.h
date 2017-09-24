@@ -131,6 +131,8 @@ struct list_elem *list_rend (struct list *);
 struct list_elem *list_head (struct list *);
 struct list_elem *list_tail (struct list *);
 
+struct list_elem *list_index_of (struct list *, int);
+
 /* List insertion. */
 void list_insert (struct list_elem *, struct list_elem *);
 void list_splice (struct list_elem *before,

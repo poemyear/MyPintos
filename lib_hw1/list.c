@@ -163,6 +163,18 @@ list_tail (struct list *list)
   return &list->tail;
 }
 
+/* Return's N th index of element. */
+struct list_elem *
+list_index_of (struct list *list, int index) {
+  int i=0;
+  struct list_elem *elem;
+  ASSERT (list != NULL);
+  for (elem=list_begin(list); i<index; i++) {
+	  elem = list_next(elem);
+  }
+  return elem;
+}
+
 /* Inserts ELEM just before BEFORE, which may be either an
    interior element or a tail.  The latter case is equivalent to
    list_push_back(). */
