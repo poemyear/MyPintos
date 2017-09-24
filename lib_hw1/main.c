@@ -123,10 +123,9 @@ void DoDumpdata() {
 }
 
 void DoList() {
-	int idx, begin, end, num, cnt, i;
+	int idx, begin, end, num;
 	char *subcmd = GetArg();
 	char *arg1 = GetArg(), *arg2 = GetArg(), *arg3 = GetArg(), *arg4 = GetArg(), *arg5 = GetArg();
-	struct list_elem *elem, *next;
 	struct list * list_ptr, * list_ptr2;
 
 	// sub command
@@ -196,12 +195,10 @@ void DoList() {
 		list_pop_back(list_ptr);
 	}
 	else if (strcmp(subcmd,"front")==0) {
-		elem = list_front(list_ptr);
-		printf("%d\n", GET_LIST_DATA(elem));
+		printf("%d\n", GET_LIST_DATA(list_front(list_ptr)));
 	}
 	else if (strcmp(subcmd,"back")==0) {
-		elem = list_back(list_ptr);
-		printf("%d\n", GET_LIST_DATA(elem));
+		printf("%d\n", GET_LIST_DATA(list_back(list_ptr)));
 	}
 	else if (strcmp(subcmd,"size")==0) {
 		printf("%d\n", list_size(list_ptr));
