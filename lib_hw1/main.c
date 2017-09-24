@@ -116,22 +116,58 @@ void DoDumpdata() {
 	idx = FindList(arg);
 	if (idx != -1) {
 		DumpList(&(my_list[idx].os_list));
+		return;
 	}
-	printf("%d", idx);
+	// hashtable
+	idx = FindHash(arg);
+	if (idx != -1) {
+		DumpHash(&(my_hash[idx].os_hash));
+		return;
+	}
+	// bitmap
+	idx = FindBitmap(arg);
+	if (idx != -1) {
+		DumpBitmap(&(my_bitmap[idx].os_bitmap));
+		return;
+	}
+	printf("%d\n", idx);
 
 }
 
 void DoList() {
+	int idx=0, num=0;
 	char *subcmd = GetArg();
+	char *arg1 = GetArg();
+	char *arg2 = GetArg();
+	struct list_item * new_item;
+
+	// sub command
 	if (subcmd == NULL)
+		return ;
+	// argument 1
+	if (arg1 == NULL)
+			return ;
+	// check list name exsists
+	idx = FindList(arg1);
+	if (idx == -1) 
 		return ;
 	if (strcmp(subcmd,"insert")==0) {
 	}
 	else if (strcmp(subcmd,"splice")==0) {
 	}
 	else if (strcmp(subcmd,"push_front")==0) {
+		if (arg2 == NULL)
+			return ;
+		new_item = (struct list_item*)malloc(sizeof(struct list_item));
+		sscanf(arg2,"%d", &(new_item->data));
+		list_push_front(&(my_list[idx].os_list), &(new_item->elem));
 	}
 	else if (strcmp(subcmd,"push_back")==0) {
+		if (arg2 == NULL)
+			return ;
+		new_item = (struct list_item*)malloc(sizeof(struct list_item));
+		sscanf(arg2,"%d", &(new_item->data));
+		list_push_back(&(my_list[idx].os_list), &(new_item->elem));
 	}
 	else if (strcmp(subcmd,"remove")==0) {
 	}
@@ -255,11 +291,17 @@ int FindBitmap(char *name) {
 }
 
 void DumpList(struct list *target) {
+	struct list_elem *e;
+	for(e = list_begin(target); e != list_end(target); e = list_next(e)){
+		struct list_item *item = list_entry(e, struct list_item, elem);
+		printf("%d ", item->data);
+	}
+	printf("\n");
 }
 
 void DumpHash(struct hash *target) {
 }
 
-void DumpBitmap(struct bitmap *target) {
+void DumpBitmap(struct bitmap **target) {
 
 }

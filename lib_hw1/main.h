@@ -44,7 +44,7 @@ int FindBitmap(char *);
 
 void DumpList(struct list *);
 void DumpHash(struct hash *);
-void DumpBitmap(struct bitmap *);
+void DumpBitmap(struct bitmap **);
 
 void GetString(char *);
 char* GetArg();
