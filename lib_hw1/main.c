@@ -123,13 +123,12 @@ void DoDumpdata() {
 }
 
 void DoList() {
-	int num, cnt, i;
+	int idx, begin, end, num, cnt, i;
 	char *subcmd = GetArg();
-	char *arg1 = GetArg();
-	char *arg2 = GetArg();
+	char *arg1 = GetArg(), *arg2 = GetArg(), *arg3 = GetArg(), *arg4 = GetArg(), *arg5 = GetArg();
 	struct list_item *new_item;
 	struct list_elem *elem, *next;
-	struct list * list_ptr;
+	struct list * list_ptr, * list_ptr2;
 
 	// sub command
 	if (subcmd == NULL)
@@ -142,8 +141,36 @@ void DoList() {
 	if (list_ptr == NULL) 
 		return ;
 	if (strcmp(subcmd,"insert")==0) {
+		if (arg2 == NULL || arg3 == NULL)
+			return ;
+		idx = ToInt(arg2);
+		num = ToInt(arg3);
+		new_item = (struct list_item*)malloc(sizeof(struct list_item));
+		new_item->data = num;
+		list_insert(list_index_of(list_ptr, idx), &(new_item->elem));
 	}
 	else if (strcmp(subcmd,"splice")==0) {
+		if (arg2 == NULL || arg3 == NULL || arg4 == NULL || arg5 == NULL)
+			return ;
+		list_ptr2 = FindList(arg3);
+		if (list_ptr2 == NULL)
+			return ;
+		idx = ToInt(arg2);
+		begin = ToInt(arg4);
+		end = ToInt(arg5);
+
+		if (idx < 0 || idx >= list_size(list_ptr))
+			return ;
+		if (begin < 0 || begin >= list_size(list_ptr2))
+			return ;
+		if (end < 0 || end >= list_size(list_ptr2))
+			return ;
+
+		list_splice(
+				list_index_of(list_ptr, idx)
+				, list_index_of(list_ptr2, begin)
+				, list_index_of(list_ptr2, end)
+				);
 	}
 	else if (strcmp(subcmd,"push_front")==0) {
 		if (arg2 == NULL)
@@ -162,15 +189,12 @@ void DoList() {
 	else if (strcmp(subcmd,"remove")==0) {
 		if (arg2 == NULL)
 			return ;
-		num = ToInt(arg2);
-		if (num < 0 || num >= list_size(list_ptr)) {
+		idx = ToInt(arg2);
+		if (idx < 0 || idx >= list_size(list_ptr)) {
 			printf("[remove index is not valid!!]\n");
 			return ;
 		}
-		for (i=0, elem = list_begin(list_ptr); i<num; i++) {
-			elem = list_next(elem);
-		}
-		list_remove(elem);
+		list_remove(list_index_of(list_ptr, idx));
 	}
 	else if (strcmp(subcmd,"pop_front")==0) {
 	}
