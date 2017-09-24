@@ -514,13 +514,20 @@ list_swap (struct list_elem *a, struct list_elem *b)
 
   ASSERT (a != NULL);
   ASSERT (b != NULL);
+ 
+  a->prev->next = b;
+  a->next->prev = b;
+  b->next->prev = a;
+  b->prev->next = a;
+  
   tmp = a->next;
   a->next = b->next;
   b->next = tmp;
-	
+
   tmp = a->prev;
   a->prev = b->prev;
   b->prev = tmp;
+  
 }
 
 /* Shuffle all elements randomly. */
