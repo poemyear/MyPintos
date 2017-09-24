@@ -111,35 +111,18 @@ void DoDumpdata() {
 	char *arg = GetArg();
 	if (arg == NULL)
 		return ;
-
-	// list
-	idx = FindList(arg);
-	if (idx != -1) {
-		DumpList(&(my_list[idx].os_list));
-		return;
-	}
-	// hashtable
-	idx = FindHash(arg);
-	if (idx != -1) {
-		DumpHash(&(my_hash[idx].os_hash));
-		return;
-	}
-	// bitmap
-	idx = FindBitmap(arg);
-	if (idx != -1) {
-		DumpBitmap(&(my_bitmap[idx].os_bitmap));
-		return;
-	}
-	printf("%d\n", idx);
-
+	DumpList(FindList(arg));
+	DumpHash(FindHash(arg));
+	DumpBitmap(FindBitmap(arg));
 }
 
 void DoList() {
-	int idx=0, num=0;
+	int num=0;
 	char *subcmd = GetArg();
 	char *arg1 = GetArg();
 	char *arg2 = GetArg();
 	struct list_item * new_item;
+	struct list * list_ptr;
 
 	// sub command
 	if (subcmd == NULL)
@@ -148,8 +131,8 @@ void DoList() {
 	if (arg1 == NULL)
 			return ;
 	// check list name exsists
-	idx = FindList(arg1);
-	if (idx == -1) 
+	list_ptr = FindList(arg1);
+	if (list_ptr == NULL) 
 		return ;
 	if (strcmp(subcmd,"insert")==0) {
 	}
@@ -160,14 +143,14 @@ void DoList() {
 			return ;
 		new_item = (struct list_item*)malloc(sizeof(struct list_item));
 		sscanf(arg2,"%d", &(new_item->data));
-		list_push_front(&(my_list[idx].os_list), &(new_item->elem));
+		list_push_front(list_ptr, &(new_item->elem));
 	}
 	else if (strcmp(subcmd,"push_back")==0) {
 		if (arg2 == NULL)
 			return ;
 		new_item = (struct list_item*)malloc(sizeof(struct list_item));
 		sscanf(arg2,"%d", &(new_item->data));
-		list_push_back(&(my_list[idx].os_list), &(new_item->elem));
+		list_push_back(list_ptr, &(new_item->elem));
 	}
 	else if (strcmp(subcmd,"remove")==0) {
 	}
@@ -263,35 +246,37 @@ void DoBitmap() {
 	}
 }
 
-int FindList(char *name) {
+struct list * FindList(char *name) {
 	int i=0;
 	for (i=0; i<list_idx+1; i++) {
 		if (strcmp(name, my_list[i].name)==0)
-			return i;
+			return &(my_list[i].os_list);
 	}
-	return -1;
+	return NULL;
 }
 
-int FindHash(char *name) {
+struct hash * FindHash(char *name) {
 	int i=0;
 	for (i=0; i<hash_idx+1; i++) {
 		if (strcmp(name, my_hash[i].name)==0)
-			return i;
+			return &(my_hash[i].os_hash);
 	}
-	return -1;
+	return NULL;
 }
 
-int FindBitmap(char *name) {
+struct bitmap ** FindBitmap(char *name) {
 	int i=0;
 	for (i=0; i<bitmap_idx+1; i++) {
 		if (strcmp(name, my_bitmap[i].name)==0)
-			return i;
+			return &(my_bitmap[i].os_bitmap);
 	}
-	return -1;
+	return NULL;
 }
 
 void DumpList(struct list *target) {
 	struct list_elem *e;
+	if (target == NULL) 
+		return ;
 	for(e = list_begin(target); e != list_end(target); e = list_next(e)){
 		struct list_item *item = list_entry(e, struct list_item, elem);
 		printf("%d ", item->data);
@@ -300,8 +285,12 @@ void DumpList(struct list *target) {
 }
 
 void DumpHash(struct hash *target) {
+	if (target == NULL) 
+		return ;
 }
 
 void DumpBitmap(struct bitmap **target) {
+	if (target == NULL) 
+		return ;
 
 }

@@ -38,9 +38,9 @@ int list_idx=-1;
 int hash_idx=-1;
 int bitmap_idx=-1;
 
-int FindList(char *);
-int FindHash(char *);
-int FindBitmap(char *);
+struct list * FindList(char *);
+struct hash * FindHash(char *);
+struct bitmap ** FindBitmap(char *);
 
 void DumpList(struct list *);
 void DumpHash(struct hash *);
