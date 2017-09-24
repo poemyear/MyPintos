@@ -126,7 +126,6 @@ void DoList() {
 	int idx, begin, end, num, cnt, i;
 	char *subcmd = GetArg();
 	char *arg1 = GetArg(), *arg2 = GetArg(), *arg3 = GetArg(), *arg4 = GetArg(), *arg5 = GetArg();
-	struct list_item *new_item;
 	struct list_elem *elem, *next;
 	struct list * list_ptr, * list_ptr2;
 
@@ -135,7 +134,7 @@ void DoList() {
 		return ;
 	// argument 1
 	if (arg1 == NULL)
-			return ;
+		return ;
 	// check list name exsists
 	list_ptr = FindList(arg1);
 	if (list_ptr == NULL) 
@@ -145,9 +144,7 @@ void DoList() {
 			return ;
 		idx = ToInt(arg2);
 		num = ToInt(arg3);
-		new_item = (struct list_item*)malloc(sizeof(struct list_item));
-		new_item->data = num;
-		list_insert(list_index_of(list_ptr, idx), &(new_item->elem));
+		list_insert(list_index_of(list_ptr, idx), CreateListElem(num));
 	}
 	else if (strcmp(subcmd,"splice")==0) {
 		if (arg2 == NULL || arg3 == NULL || arg4 == NULL || arg5 == NULL)
@@ -175,16 +172,12 @@ void DoList() {
 	else if (strcmp(subcmd,"push_front")==0) {
 		if (arg2 == NULL)
 			return ;
-		new_item = (struct list_item*)malloc(sizeof(struct list_item));
-		new_item->data = ToInt(arg2);
-		list_push_front(list_ptr, &(new_item->elem));
+		list_push_front(list_ptr, CreateListElem(ToInt(arg2)));
 	}
 	else if (strcmp(subcmd,"push_back")==0) {
 		if (arg2 == NULL)
 			return ;
-		new_item = (struct list_item*)malloc(sizeof(struct list_item));
-		new_item->data = ToInt(arg2);
-		list_push_back(list_ptr, &(new_item->elem));
+		list_push_front(list_ptr, CreateListElem(ToInt(arg2)));
 	}
 	else if (strcmp(subcmd,"remove")==0) {
 		if (arg2 == NULL)
@@ -204,11 +197,11 @@ void DoList() {
 	}
 	else if (strcmp(subcmd,"front")==0) {
 		elem = list_front(list_ptr);
-		printf("%d\n", list_entry(elem, struct list_item, elem)->data);
+		printf("%d\n", GET_LIST_DATA(elem));
 	}
 	else if (strcmp(subcmd,"back")==0) {
 		elem = list_back(list_ptr);
-		printf("%d\n", list_entry(elem, struct list_item, elem)->data);
+		printf("%d\n", GET_LIST_DATA(elem));
 	}
 	else if (strcmp(subcmd,"size")==0) {
 		printf("%d\n", list_size(list_ptr));
@@ -223,8 +216,12 @@ void DoList() {
 		list_reverse(list_ptr);
 	}
 	else if (strcmp(subcmd,"sort")==0) {
+		list_sort(list_ptr, llf, NULL);
 	}
 	else if (strcmp(subcmd,"insert_ordered")==0) {
+		if (arg2 == NULL)
+			return ;
+		list_insert_ordered(list_ptr, CreateListElem(ToInt(arg2)), llf, NULL);
 	}
 	else if (strcmp(subcmd,"unique")==0) {
 	}
@@ -333,8 +330,7 @@ void DumpList(struct list *target) {
 	if (target == NULL) 
 		return ;
 	for(e = list_begin(target); e != list_end(target); e = list_next(e)){
-		struct list_item *item = list_entry(e, struct list_item, elem);
-		printf("%d ", item->data);
+		printf("%d ", GET_LIST_DATA(e));
 	}
 	printf("\n");
 }
@@ -347,5 +343,15 @@ void DumpHash(struct hash *target) {
 void DumpBitmap(struct bitmap **target) {
 	if (target == NULL) 
 		return ;
+}
 
+struct list_elem * CreateListElem(int data) {
+	struct list_item *new_item = (struct list_item*)malloc(sizeof(struct list_item));
+	new_item->data = data;
+	return &(new_item->elem);
+}
+
+bool llf (const struct list_elem *a, const struct list_elem *b, void *aux) {
+	if (GET_LIST_DATA(a) >= GET_LIST_DATA(b) )return false;
+	else return true;
 }

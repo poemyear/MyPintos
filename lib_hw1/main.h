@@ -46,10 +46,10 @@ void DumpList(struct list *);
 void DumpHash(struct hash *);
 void DumpBitmap(struct bitmap **);
 
+int ToInt(char *);
 void GetString(char *);
 char* GetArg();
 int GetCommand();
-int ToInt(char *);
 
 void DoCreate();
 void DoDelete();
@@ -57,3 +57,11 @@ void DoDumpdata();
 void DoList();
 void DoHash();
 void DoBitmap();
+
+#define GET_LIST_DATA(LIST_ELEM) \
+	    list_entry(LIST_ELEM, struct list_item, elem)->data
+struct list_elem * CreateListElem(int);
+bool llf (const struct list_elem *a,
+		const struct list_elem *b,
+		void *aux);
+
