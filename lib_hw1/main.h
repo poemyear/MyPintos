@@ -49,6 +49,7 @@ void DumpBitmap(struct bitmap **);
 void GetString(char *);
 char* GetArg();
 int GetCommand();
+int ToInt(char *);
 
 void DoCreate();
 void DoDelete();

@@ -37,6 +37,12 @@ int main (void) {
 	return 0;
 }
 
+int ToInt(char *str) {
+	int num;
+	sscanf(str, "%d", &num);
+	return num;
+}
+
 void GetString(char *str) {
 	int i;
 	for(i=0;i<100;i++)
@@ -117,11 +123,12 @@ void DoDumpdata() {
 }
 
 void DoList() {
-	int num=0;
+	int num, cnt, i;
 	char *subcmd = GetArg();
 	char *arg1 = GetArg();
 	char *arg2 = GetArg();
-	struct list_item * new_item;
+	struct list_item *new_item;
+	struct list_elem *elem, *next;
 	struct list * list_ptr;
 
 	// sub command
@@ -142,17 +149,28 @@ void DoList() {
 		if (arg2 == NULL)
 			return ;
 		new_item = (struct list_item*)malloc(sizeof(struct list_item));
-		sscanf(arg2,"%d", &(new_item->data));
+		new_item->data = ToInt(arg2);
 		list_push_front(list_ptr, &(new_item->elem));
 	}
 	else if (strcmp(subcmd,"push_back")==0) {
 		if (arg2 == NULL)
 			return ;
 		new_item = (struct list_item*)malloc(sizeof(struct list_item));
-		sscanf(arg2,"%d", &(new_item->data));
+		new_item->data = ToInt(arg2);
 		list_push_back(list_ptr, &(new_item->elem));
 	}
 	else if (strcmp(subcmd,"remove")==0) {
+		if (arg2 == NULL)
+			return ;
+		num = ToInt(arg2);
+		if (num < 0 || num >= list_size(list_ptr)) {
+			printf("[remove index is not valid!!]\n");
+			return ;
+		}
+		for (i=0, elem = list_begin(list_ptr); i<num; i++) {
+			elem = list_next(elem);
+		}
+		list_remove(elem);
 	}
 	else if (strcmp(subcmd,"pop_front")==0) {
 	}
@@ -163,6 +181,7 @@ void DoList() {
 	else if (strcmp(subcmd,"back")==0) {
 	}
 	else if (strcmp(subcmd,"size")==0) {
+		printf("%d\n", list_size(list_ptr));
 	}
 	else if (strcmp(subcmd,"empty")==0) {
 	}
@@ -252,6 +271,7 @@ struct list * FindList(char *name) {
 		if (strcmp(name, my_list[i].name)==0)
 			return &(my_list[i].os_list);
 	}
+	printf("Np such list!\n");
 	return NULL;
 }
 
