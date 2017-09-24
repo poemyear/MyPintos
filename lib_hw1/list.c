@@ -506,6 +506,33 @@ list_unique (struct list *list, struct list *duplicates,
       elem = next;
 }
 
+/* Swap's both input elements. */
+void
+list_swap (struct list_elem *a, struct list_elem *b)
+{
+  struct list_elem *tmp;
+
+  ASSERT (a != NULL);
+  ASSERT (b != NULL);
+  tmp = a->next;
+  a->next = b->next;
+  b->next = tmp;
+	
+  tmp = a->prev;
+  a->prev = b->prev;
+  b->prev = tmp;
+}
+
+/* Shuffle all elements randomly. */
+void
+list_shuffle (struct list *list)
+{
+  ASSERT (list != NULL);
+  if (list_empty (list))
+	  return;
+  list_swap(list_begin(list), list_end(list));
+}
+
 /* Returns the element in LIST with the largest value according
    to LESS given auxiliary data AUX.  If there is more than one
    maximum, returns the one that appears earlier in the list.  If
