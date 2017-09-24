@@ -224,14 +224,23 @@ void DoList() {
 		list_insert_ordered(list_ptr, CreateListElem(ToInt(arg2)), llf, NULL);
 	}
 	else if (strcmp(subcmd,"unique")==0) {
+		list_unique(list_ptr, FindList(arg2), llf, NULL);
 	}
 	else if (strcmp(subcmd,"max")==0) {
+		printf("%d\n", GET_LIST_DATA(list_max(list_ptr, llf, NULL)));
 	}
 	else if (strcmp(subcmd,"min")==0) {
+		printf("%d\n", GET_LIST_DATA(list_min(list_ptr, llf, NULL)));
 	}
 	else if (strcmp(subcmd,"swap")==0) {
+		if (arg2 == NULL || arg3 == NULL)
+			return ;
+		list_swap(
+				list_index_of(list_ptr, ToInt(arg2))
+				, list_index_of(list_ptr, ToInt(arg3)));
 	}
 	else if (strcmp(subcmd,"shuffle")==0) {
+		list_shuffle(list_ptr);
 	}
 }
 
@@ -299,6 +308,8 @@ void DoBitmap() {
 
 struct list * FindList(char *name) {
 	int i=0;
+	if (name == NULL)
+		return NULL;
 	for (i=0; i<list_idx+1; i++) {
 		if (strcmp(name, my_list[i].name)==0)
 			return &(my_list[i].os_list);
