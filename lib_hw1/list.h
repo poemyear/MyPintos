@@ -86,6 +86,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+
 /* List element. */
 struct list_elem 
   {
@@ -98,6 +99,13 @@ struct list
   {
     struct list_elem head;      /* List head. */
     struct list_elem tail;      /* List tail. */
+  };
+
+/* List item. */
+struct list_item
+  {
+    struct list_elem elem;
+	int data;
   };
 
 /* Converts pointer to list element LIST_ELEM into a pointer to
