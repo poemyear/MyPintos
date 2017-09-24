@@ -177,7 +177,7 @@ void DoList() {
 	else if (strcmp(subcmd,"push_back")==0) {
 		if (arg2 == NULL)
 			return ;
-		list_push_front(list_ptr, CreateListElem(ToInt(arg2)));
+		list_push_back(list_ptr, CreateListElem(ToInt(arg2)));
 	}
 	else if (strcmp(subcmd,"remove")==0) {
 		if (arg2 == NULL)
