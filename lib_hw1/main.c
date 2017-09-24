@@ -197,19 +197,30 @@ void DoList() {
 		list_remove(list_index_of(list_ptr, idx));
 	}
 	else if (strcmp(subcmd,"pop_front")==0) {
+		list_pop_front(list_ptr);
 	}
 	else if (strcmp(subcmd,"pop_back")==0) {
+		list_pop_back(list_ptr);
 	}
 	else if (strcmp(subcmd,"front")==0) {
+		elem = list_front(list_ptr);
+		printf("%d\n", list_entry(elem, struct list_item, elem)->data);
 	}
 	else if (strcmp(subcmd,"back")==0) {
+		elem = list_back(list_ptr);
+		printf("%d\n", list_entry(elem, struct list_item, elem)->data);
 	}
 	else if (strcmp(subcmd,"size")==0) {
 		printf("%d\n", list_size(list_ptr));
 	}
 	else if (strcmp(subcmd,"empty")==0) {
+		if (list_empty(list_ptr))
+			printf("true\n");
+		else
+			printf("false\n");
 	}
 	else if (strcmp(subcmd,"reverse")==0) {
+		list_reverse(list_ptr);
 	}
 	else if (strcmp(subcmd,"sort")==0) {
 	}
