@@ -65,9 +65,14 @@ bool llf (const struct list_elem *,
 		const struct list_elem *, 
 		void *);
 
+#define GET_HASH_DATA(HASH_ELEM) \
+		hash_entry(HASH_ELEM, struct hash_item, elem)->data
+
 struct hash_elem * CreateHashElem(int);
 unsigned hhf (const struct hash_elem *,
 		void *);
 bool hlf (const struct hash_elem *,
 		const struct hash_elem *, 
+		void *);
+void haf (struct hash_elem *, 
 		void *);

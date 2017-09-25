@@ -246,7 +246,7 @@ void DoHash() {
 	char *subcmd = GetArg();
 	char *arg1 = GetArg(), *arg2 = GetArg(), *arg3 = GetArg(), *arg4 = GetArg(), *arg5 = GetArg();
 	struct hash *hash_ptr;
-	struct hash_elem *new_elem;
+	struct hash_elem *new_elem, *elem_ptr;
 
 	// sub command
 	if (subcmd == NULL)
@@ -265,18 +265,45 @@ void DoHash() {
 		hash_insert(hash_ptr, CreateHashElem(num));
 	}
 	else if (strcmp(subcmd,"replace")==0) {
+		if (arg2 == NULL)
+			return ;
+		num = ToInt(arg2);
+		hash_replace(hash_ptr, CreateHashElem(num));
 	}
 	else if (strcmp(subcmd,"find")==0) {
+		if (arg2 == NULL)
+			return ;
+		num = ToInt(arg2);
+		elem_ptr = hash_find(hash_ptr, CreateHashElem(num));
+		if (elem_ptr == NULL)
+			return ;
+		printf("%d\n", GET_HASH_DATA(elem_ptr));
 	}
 	else if (strcmp(subcmd,"delete")==0) {
+		if (arg2 == NULL)
+			return ;
+		num = ToInt(arg2);
+		elem_ptr = hash_delete(hash_ptr, CreateHashElem(num));
+		// debug
+		if (elem_ptr != NULL)
+			printf("%d is deleted\n",num);
 	}
 	else if (strcmp(subcmd,"clear")==0) {
+		hash_clear(hash_ptr, haf);
 	}
 	else if (strcmp(subcmd,"size")==0) {
+		printf("%d\n", hash_size(hash_ptr));
 	}
 	else if (strcmp(subcmd,"empty")==0) {
+		if (hash_empty(hash_ptr))
+			printf("true\n");
+		else
+			printf("false\n");
 	}
 	else if (strcmp(subcmd,"apply")==0) {
+		if (arg2 == NULL)
+			return ;
+		hash_apply(hash_ptr, haf);
 	}
 }
 
@@ -329,7 +356,7 @@ struct list * FindList(char *name) {
 			return &(my_list[i].os_list);
 	}
 	// debug
-	printf("Np such list!\n");
+//	printf("Np such list!\n");
 	return NULL;
 }
 
@@ -342,7 +369,7 @@ struct hash * FindHash(char *name) {
 			return &(my_hash[i].os_hash);
 	}
 	// debug
-	printf("Np such hash!\n");
+//	printf("Np such hash!\n");
 	return NULL;
 }
 
@@ -355,7 +382,7 @@ struct bitmap ** FindBitmap(char *name) {
 			return &(my_bitmap[i].os_bitmap);
 	}
 	// debug
-	printf("Np such bitmap!\n");
+//	printf("Np such bitmap!\n");
 	return NULL;
 }
 
@@ -404,9 +431,14 @@ struct hash_elem * CreateHashElem(int data) {
 }
 
 unsigned hhf (const struct hash_elem *e, void *aux) {
-	return 0;
+	return hash_int(GET_HASH_DATA(e));
 }
 
 bool hlf (const struct hash_elem *a, const struct hash_elem *b, void *aux) {
-	return true;
+	return false;
+}
+
+void haf (struct hash_elem *e, void *aux) {
+	// debug
+	printf("haf function\n");
 }
