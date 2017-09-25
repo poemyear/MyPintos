@@ -76,3 +76,7 @@ bool hlf (const struct hash_elem *,
 		void *);
 void haf (struct hash_elem *, 
 		void *);
+void haf_square (struct hash_elem *, 
+		void *);
+void haf_triple (struct hash_elem *, 
+		void *);

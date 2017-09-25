@@ -242,11 +242,10 @@ void DoList() {
 }
 
 void DoHash() {
-	int idx, begin, end, num;
 	char *subcmd = GetArg();
-	char *arg1 = GetArg(), *arg2 = GetArg(), *arg3 = GetArg(), *arg4 = GetArg(), *arg5 = GetArg();
+	char *arg1 = GetArg(), *arg2 = GetArg();
 	struct hash *hash_ptr;
-	struct hash_elem *new_elem, *elem_ptr;
+	struct hash_elem *elem_ptr;
 
 	// sub command
 	if (subcmd == NULL)
@@ -283,10 +282,7 @@ void DoHash() {
 		if (arg2 == NULL)
 			return ;
 		num = ToInt(arg2);
-		elem_ptr = hash_delete(hash_ptr, CreateHashElem(num));
-		// debug
-		if (elem_ptr != NULL)
-			printf("%d is deleted\n",num);
+		hash_delete(hash_ptr, CreateHashElem(num));
 	}
 	else if (strcmp(subcmd,"clear")==0) {
 		hash_clear(hash_ptr, haf);
@@ -303,7 +299,13 @@ void DoHash() {
 	else if (strcmp(subcmd,"apply")==0) {
 		if (arg2 == NULL)
 			return ;
-		hash_apply(hash_ptr, haf);
+		if (strcmp(arg2, "square")==0) {
+			hash_apply(hash_ptr, haf_square);
+		} else if (strcmp(arg2, "triple")==0) {
+			hash_apply(hash_ptr, haf_triple);
+		} else {
+			hash_apply(hash_ptr, haf);
+		}
 	}
 }
 
@@ -356,7 +358,7 @@ struct list * FindList(char *name) {
 			return &(my_list[i].os_list);
 	}
 	// debug
-//	printf("Np such list!\n");
+	//	printf("Np such list!\n");
 	return NULL;
 }
 
@@ -369,7 +371,7 @@ struct hash * FindHash(char *name) {
 			return &(my_hash[i].os_hash);
 	}
 	// debug
-//	printf("Np such hash!\n");
+	//	printf("Np such hash!\n");
 	return NULL;
 }
 
@@ -382,7 +384,7 @@ struct bitmap ** FindBitmap(char *name) {
 			return &(my_bitmap[i].os_bitmap);
 	}
 	// debug
-//	printf("Np such bitmap!\n");
+	//	printf("Np such bitmap!\n");
 	return NULL;
 }
 
@@ -435,10 +437,20 @@ unsigned hhf (const struct hash_elem *e, void *aux) {
 }
 
 bool hlf (const struct hash_elem *a, const struct hash_elem *b, void *aux) {
+	if (GET_HASH_DATA(a) < GET_HASH_DATA(b))
+		return true;
 	return false;
 }
 
 void haf (struct hash_elem *e, void *aux) {
-	// debug
-	printf("haf function\n");
+}
+
+void haf_square (struct hash_elem *e, void *aux) {
+	int *data = &(GET_HASH_DATA(e));
+	*data = (*data) * (*data);
+}
+
+void haf_triple (struct hash_elem *e, void *aux) {
+	int *data = &(GET_HASH_DATA(e));
+	*data = (*data) * (*data) * (*data);
 }
