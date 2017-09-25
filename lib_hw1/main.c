@@ -242,6 +242,7 @@ void DoList() {
 }
 
 void DoHash() {
+	int num;
 	char *subcmd = GetArg();
 	char *arg1 = GetArg(), *arg2 = GetArg();
 	struct hash *hash_ptr;
