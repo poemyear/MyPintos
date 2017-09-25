@@ -61,7 +61,13 @@ void DoBitmap();
 #define GET_LIST_DATA(LIST_ELEM) \
 	    list_entry(LIST_ELEM, struct list_item, elem)->data
 struct list_elem * CreateListElem(int);
-bool llf (const struct list_elem *a,
-		const struct list_elem *b,
-		void *aux);
+bool llf (const struct list_elem *,
+		const struct list_elem *, 
+		void *);
 
+struct hash_elem * CreateHashElem(int);
+unsigned hhf (const struct hash_elem *,
+		void *);
+bool hlf (const struct hash_elem *,
+		const struct hash_elem *, 
+		void *);

@@ -94,8 +94,8 @@ void DoCreate() {
 		list_init(&(my_list[idx].os_list));
 	} else if (strcmp(arg, "hashtable")==0) {
 		idx = ++hash_idx;
-		//		strcpy(my_hash[idx].name, name);
-		//		hash_init(&(my_hash[idx].os_hash));
+		strcpy(my_hash[idx].name, name);
+		hash_init(&(my_hash[idx].os_hash), hhf, hlf, NULL);
 	} else if (strcmp(arg, "bitmap")==0) {
 		idx = ++bitmap_idx;
 		sscanf(GetArg(),"%d", &num);
@@ -242,10 +242,27 @@ void DoList() {
 }
 
 void DoHash() {
+	int idx, begin, end, num;
 	char *subcmd = GetArg();
+	char *arg1 = GetArg(), *arg2 = GetArg(), *arg3 = GetArg(), *arg4 = GetArg(), *arg5 = GetArg();
+	struct hash *hash_ptr;
+	struct hash_elem *new_elem;
+
+	// sub command
 	if (subcmd == NULL)
 		return ;
+	// argument 1
+	if (arg1 == NULL)
+		return ;
+	// check list name exsists
+	hash_ptr = FindHash(arg1);
+	if (hash_ptr == NULL) 
+		return ;
 	if (strcmp(subcmd,"insert")==0) {
+		if (arg2 == NULL)
+			return ;
+		num = ToInt(arg2);
+		hash_insert(hash_ptr, CreateHashElem(num));
 	}
 	else if (strcmp(subcmd,"replace")==0) {
 	}
@@ -311,25 +328,34 @@ struct list * FindList(char *name) {
 		if (strcmp(name, my_list[i].name)==0)
 			return &(my_list[i].os_list);
 	}
+	// debug
 	printf("Np such list!\n");
 	return NULL;
 }
 
 struct hash * FindHash(char *name) {
 	int i=0;
+	if (name == NULL)
+		return NULL;
 	for (i=0; i<hash_idx+1; i++) {
 		if (strcmp(name, my_hash[i].name)==0)
 			return &(my_hash[i].os_hash);
 	}
+	// debug
+	printf("Np such hash!\n");
 	return NULL;
 }
 
 struct bitmap ** FindBitmap(char *name) {
 	int i=0;
+	if (name == NULL)
+		return NULL;
 	for (i=0; i<bitmap_idx+1; i++) {
 		if (strcmp(name, my_bitmap[i].name)==0)
 			return &(my_bitmap[i].os_bitmap);
 	}
+	// debug
+	printf("Np such bitmap!\n");
 	return NULL;
 }
 
@@ -346,6 +372,13 @@ void DumpList(struct list *target) {
 void DumpHash(struct hash *target) {
 	if (target == NULL) 
 		return ;
+	struct hash_iterator i;
+	hash_first(&i, target);
+	while (hash_next(&i)) {
+		struct hash_item *item = hash_entry (hash_cur(&i), struct hash_item, elem);
+		printf("%d ", item->data);
+	}
+	printf("\n");
 }
 
 void DumpBitmap(struct bitmap **target) {
@@ -362,4 +395,18 @@ struct list_elem * CreateListElem(int data) {
 bool llf (const struct list_elem *a, const struct list_elem *b, void *aux) {
 	if (GET_LIST_DATA(a) >= GET_LIST_DATA(b) )return false;
 	else return true;
+}
+
+struct hash_elem * CreateHashElem(int data) {
+	struct hash_item *new_item = (struct hash_item*)malloc(sizeof(struct hash_item));
+	new_item->data = data;
+	return &(new_item->elem);
+}
+
+unsigned hhf (const struct hash_elem *e, void *aux) {
+	return 0;
+}
+
+bool hlf (const struct hash_elem *a, const struct hash_elem *b, void *aux) {
+	return true;
 }
