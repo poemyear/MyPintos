@@ -55,6 +55,9 @@ void DumpList(struct list *);
 void DumpHash(struct hash *);
 void DumpBitmap(struct bitmap *);
 
+void PrintBool(bool);
+void PrintSizeT(size_t);
+
 int ToInt(char *);
 bool ToBool(char *);
 void GetString(char *);

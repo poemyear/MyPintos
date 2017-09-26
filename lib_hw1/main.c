@@ -38,6 +38,21 @@ int main (void) {
 	return 0;
 }
 
+void PrintBool(bool bl) {
+	if (bl)
+		printf("true\n");
+	else
+		printf("false\n");
+}
+
+void PrintSizeT(size_t st) {
+	if (st == SIZE_MAX) {
+		printf("4294967295\n");
+	} else {
+		printf("%zu\n", st);
+	}
+}
+
 bool ToBool(char *str) {
 	if (strcmp(str, "true")==0)
 		return true;
@@ -359,15 +374,12 @@ void DoBitmap() {
 	else if (strcmp(subcmd,"test")==0) {
 		if (arg2 == NULL)
 			return ;
-		if (bitmap_test(bitmap_ptr, ToInt(arg2)))
-			printf("true\n");
-		else
-			printf("false\n");
+		PrintBool(bitmap_test(bitmap_ptr, ToInt(arg2)));
 	}
 	else if (strcmp(subcmd,"set_all")==0) {
 		if (arg2 == NULL)
 			return ;
-		bitmap_set_all(bitmap_ptr, ToInt(arg2));
+		bitmap_set_all(bitmap_ptr, ToBool(arg2));
 	}
 	else if (strcmp(subcmd,"set_multiple")==0) {
 		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
@@ -377,37 +389,37 @@ void DoBitmap() {
 	else if (strcmp(subcmd,"count")==0) {
 		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
 			return ;
-		bitmap_count(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4));
+		PrintSizeT(bitmap_count(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4)));
 	}
 	else if (strcmp(subcmd,"contains")==0) {
 		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
 			return ;
-		bitmap_contains(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4));
+		PrintBool(bitmap_contains(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4)));
 	}
 	else if (strcmp(subcmd,"any")==0) {
 		if (arg2 == NULL || arg3 == NULL)
 			return ;
-		bitmap_any(bitmap_ptr, ToInt(arg2), ToInt(arg3));
+		PrintBool(bitmap_any(bitmap_ptr, ToInt(arg2), ToInt(arg3)));
 	}
 	else if (strcmp(subcmd,"none")==0) {
 		if (arg2 == NULL || arg3 == NULL)
 			return ;
-		bitmap_none(bitmap_ptr, ToInt(arg2), ToInt(arg3));
+		PrintBool(bitmap_none(bitmap_ptr, ToInt(arg2), ToInt(arg3)));
 	}
 	else if (strcmp(subcmd,"all")==0) {
 		if (arg2 == NULL || arg3 == NULL)
 			return ;
-		bitmap_all(bitmap_ptr, ToInt(arg2), ToInt(arg3));
+		PrintBool(bitmap_all(bitmap_ptr, ToInt(arg2), ToInt(arg3)));
 	}
 	else if (strcmp(subcmd,"scan")==0) {
 		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
 			return ;
-		bitmap_scan(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4));
+		PrintSizeT(bitmap_scan(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4)));
 	}
 	else if (strcmp(subcmd,"scan_and_flip")==0) {
 		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
 			return ;
-		bitmap_scan_and_flip(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4));
+		PrintSizeT(bitmap_scan_and_flip(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4)));
 	}
 	else if (strcmp(subcmd,"dump")==0) {
 		bitmap_dump(bitmap_ptr);
