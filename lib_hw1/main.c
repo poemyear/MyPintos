@@ -34,7 +34,14 @@ int main (void) {
 				break;
 		}
 	}
+	FreeAll();
 	return 0;
+}
+
+bool ToBool(char *str) {
+	if (strcmp(str, "true")==0)
+		return true;
+	return false;
 }
 
 int ToInt(char *str) {
@@ -98,11 +105,9 @@ void DoCreate() {
 		hash_init(&(my_hash[idx].os_hash), hhf, hlf, NULL);
 	} else if (strcmp(arg, "bitmap")==0) {
 		idx = ++bitmap_idx;
+		strcpy(my_bitmap[idx].name, name);
 		sscanf(GetArg(),"%d", &num);
-
-		printf("%s %d\n", name, num);
-		//		strcpy(my_bitmap[idx].name, name);
-		//		bitmap_init(&(my_bitmap[idx].os_bitmap));
+		my_bitmap[idx].os_bitmap = bitmap_create(num);
 	}
 }
 
@@ -254,7 +259,7 @@ void DoHash() {
 	// argument 1
 	if (arg1 == NULL)
 		return ;
-	// check list name exsists
+	// check hash name exsists
 	hash_ptr = FindHash(arg1);
 	if (hash_ptr == NULL) 
 		return ;
@@ -311,40 +316,101 @@ void DoHash() {
 }
 
 void DoBitmap() {
+	int num;
 	char *subcmd = GetArg();
+	char *arg1 = GetArg(), *arg2 = GetArg(), *arg3 = GetArg(), *arg4 = GetArg();
+	struct bitmap *bitmap_ptr;
+	struct hash_elem *elem_ptr;
+	bool value;
+
+	// sub command
 	if (subcmd == NULL)
 		return ;
+	// argument 1
+	if (arg1 == NULL)
+		return ;
+	// check bitmap name exsists
+	bitmap_ptr = (FindBitmap(arg1));
+	if (bitmap_ptr == NULL) 
+		return ;
 	if (strcmp(subcmd,"size")==0) {
+		printf("%d\n", bitmap_size(bitmap_ptr));
 	}
 	else if (strcmp(subcmd,"set")==0) {
+		if (arg2 == NULL || arg3 == NULL)
+			return ;
+		bitmap_set(bitmap_ptr, ToInt(arg2), ToBool(arg3));
 	}
 	else if (strcmp(subcmd,"mark")==0) {
+		if (arg2 == NULL)
+			return ;
+		bitmap_mark(bitmap_ptr, ToInt(arg2));
 	}
 	else if (strcmp(subcmd,"reset")==0) {
+		if (arg2 == NULL)
+			return ;
+		bitmap_reset(bitmap_ptr, ToInt(arg2));
 	}
 	else if (strcmp(subcmd,"flip")==0) {
+		if (arg2 == NULL)
+			return ;
+		bitmap_flip(bitmap_ptr, ToInt(arg2));
 	}
 	else if (strcmp(subcmd,"test")==0) {
+		if (arg2 == NULL)
+			return ;
+		if (bitmap_test(bitmap_ptr, ToInt(arg2)))
+			printf("true\n");
+		else
+			printf("false\n");
 	}
 	else if (strcmp(subcmd,"set_all")==0) {
+		if (arg2 == NULL)
+			return ;
+		bitmap_set_all(bitmap_ptr, ToInt(arg2));
 	}
 	else if (strcmp(subcmd,"set_multiple")==0) {
+		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
+			return ;
+		bitmap_set_multiple(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4));
 	}
 	else if (strcmp(subcmd,"count")==0) {
+		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
+			return ;
+		bitmap_count(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4));
 	}
 	else if (strcmp(subcmd,"contains")==0) {
+		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
+			return ;
+		bitmap_contains(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4));
 	}
 	else if (strcmp(subcmd,"any")==0) {
+		if (arg2 == NULL || arg3 == NULL)
+			return ;
+		bitmap_any(bitmap_ptr, ToInt(arg2), ToInt(arg3));
 	}
 	else if (strcmp(subcmd,"none")==0) {
+		if (arg2 == NULL || arg3 == NULL)
+			return ;
+		bitmap_none(bitmap_ptr, ToInt(arg2), ToInt(arg3));
 	}
 	else if (strcmp(subcmd,"all")==0) {
+		if (arg2 == NULL || arg3 == NULL)
+			return ;
+		bitmap_all(bitmap_ptr, ToInt(arg2), ToInt(arg3));
 	}
 	else if (strcmp(subcmd,"scan")==0) {
+		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
+			return ;
+		bitmap_scan(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4));
 	}
 	else if (strcmp(subcmd,"scan_and_flip")==0) {
+		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
+			return ;
+		bitmap_scan_and_flip(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4));
 	}
 	else if (strcmp(subcmd,"dump")==0) {
+		bitmap_dump(bitmap_ptr);
 	}
 	else if (strcmp(subcmd,"expand")==0) {
 	}
@@ -376,13 +442,13 @@ struct hash * FindHash(char *name) {
 	return NULL;
 }
 
-struct bitmap ** FindBitmap(char *name) {
+struct bitmap * FindBitmap(char *name) {
 	int i=0;
 	if (name == NULL)
 		return NULL;
 	for (i=0; i<bitmap_idx+1; i++) {
 		if (strcmp(name, my_bitmap[i].name)==0)
-			return &(my_bitmap[i].os_bitmap);
+			return (my_bitmap[i].os_bitmap);
 	}
 	// debug
 	//	printf("Np such bitmap!\n");
@@ -411,9 +477,14 @@ void DumpHash(struct hash *target) {
 	printf("\n");
 }
 
-void DumpBitmap(struct bitmap **target) {
+void DumpBitmap(struct bitmap *target) {
 	if (target == NULL) 
 		return ;
+	int  i=0;
+	for (i=0; i < bitmap_size(target); i++) {
+		printf("%d", bitmap_test(target, i)?1:0);
+	}
+	printf("\n");
 }
 
 struct list_elem * CreateListElem(int data) {
@@ -454,4 +525,11 @@ void haf_square (struct hash_elem *e, void *aux) {
 void haf_triple (struct hash_elem *e, void *aux) {
 	int *data = &(GET_HASH_DATA(e));
 	*data = (*data) * (*data) * (*data);
+}
+
+void FreeAll() {
+	int i=0;
+	for (i=0; i<bitmap_idx; i++) {
+		free(my_bitmap[i].os_bitmap);
+	}
 }
