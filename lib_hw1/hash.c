@@ -302,6 +302,13 @@ hash_int (int i)
 {
   return hash_bytes (&i, sizeof i);
 }
+
+/* Coursework. */
+unsigned hash_int_2 (int i) 
+{
+  return i%4;
+}
+
 
 /* Returns the bucket in H that E belongs in. */
 static struct list *
