@@ -206,6 +206,20 @@ bitmap_test (const struct bitmap *b, size_t idx)
   ASSERT (idx < b->bit_cnt);
   return (b->bits[elem_idx (idx)] & bit_mask (idx)) != 0;
 }
+
+/* Courserwork. */
+struct 
+bitmap *bitmap_expand (struct bitmap *b, int size) 
+{
+      b->bits = realloc (b->bits, b->bit_cnt + byte_cnt(size));
+      if (b->bits != NULL) {
+		  b->bit_cnt = b->bit_cnt + size;
+		  bitmap_set_multiple(b, b->bit_cnt-size, size, false);
+		  return b;
+	  }
+	return NULL;
+}
+
 
 /* Setting and testing multiple bits. */
 
