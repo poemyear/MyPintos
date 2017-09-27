@@ -104,11 +104,9 @@ void DoCreate() {
 		strcpy(my_hash[idx].name, name);
 		hash_init(&(my_hash[idx].os_hash), hhf, hlf, NULL);
 	} else if (TYPE_IS_BITMAP) {
-		int num=0;
 		idx = ++bitmap_idx;
 		strcpy(my_bitmap[idx].name, name);
-		sscanf(GetArg(),"%d", &num);
-		my_bitmap[idx].os_bitmap = bitmap_create(num);
+		my_bitmap[idx].os_bitmap = bitmap_create(ToInt(GetArg()));
 	}
 }
 
