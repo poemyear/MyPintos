@@ -2,7 +2,6 @@
 
 int main (void) {
 	char cmd[255]={0, };
-	char *ptr;
 	int i;
 	bool quit=false;
 
@@ -34,44 +33,14 @@ int main (void) {
 				break;
 		}
 	}
-	FreeAll();
 	return 0;
-}
-
-void PrintBool(bool bl) {
-	if (bl)
-		printf("true\n");
-	else
-		printf("false\n");
-}
-
-void PrintSizeT(size_t st) {
-	if (st == SIZE_MAX) {
-		printf("4294967295\n");
-	} else {
-		printf("%zu\n", st);
-	}
-}
-
-bool ToBool(char *str) {
-	if (strcmp(str, "true")==0)
-		return true;
-	return false;
-}
-
-int ToInt(char *str) {
-	int num;
-	sscanf(str, "%d", &num);
-	return num;
 }
 
 void GetString(char *str) {
 	int i;
-	for(i=0;i<100;i++)
-	{
+	for(i=0;i<MAX_COMMAND_LENGTH;i++) {
 		scanf("%c",&str[i]);
-		if(str[i] == '\n')
-		{
+		if(str[i] == '\n') {
 			str[i]='\0';
 			break;
 		}
@@ -79,46 +48,63 @@ void GetString(char *str) {
 }
 
 char* GetArg() {
-	return strtok (NULL,  " \t");
+	return strtok (NULL,  DELIM_ARG);
 }
 
 int GetCommand(char *cmd) {
-	char * ptr = strtok (cmd, "_ \t");
+	char * ptr = strtok (cmd, DELIM_COMMAND);
 	if (cmd[0]=='\0')
 		return -1;
-	if (strcmp(ptr, "quit") == 0)
+	if (CMD("quit"))
 		return QUIT;
-	if (strcmp(ptr, "create") == 0)
+	if (CMD("create")) {
+		type = GetArg();
+		name = GetArg();
+		if (!type || !name)
+			return -1;
 		return CREATE;
-	if (strcmp(ptr, "delete") == 0)
+	}
+	if (CMD("delete")) {
+		name = GetArg();
+		if (name == NULL)
+			return -1;
 		return DELETE;
-	if (strcmp(ptr, "dumpdata") == 0)
+	}
+	if (CMD("dumpdata")) {
+		name = GetArg();
+		if (name == NULL)
+			return -1;
 		return DUMPDATA;
-	if (strcmp(ptr, "list") == 0)
+	}
+	subcmd = GetArg();
+	name = GetArg();
+	arg1 = GetArg();
+	arg2 = GetArg();
+	arg3 = GetArg();
+	arg4 = GetArg();
+	if (!subcmd || !name)
+		return -1;
+	if (CMD("list"))
 		return LIST;
-	if (strcmp(ptr, "hash") == 0)
+	if (CMD("hash"))
 		return HASH;
-	if (strcmp(ptr, "bitmap") == 0)
+	if (CMD("bitmap"))
 		return BITMAP;
 	return -1;
 }
 
 void DoCreate() {
-	char *arg = GetArg();
-	char *name = GetArg();
 	int idx=0;
-	int num=0;
-	if (arg == NULL)
-		return ;
-	if (strcmp(arg, "list")==0) {
+	if (TYPE_IS_LIST) {
 		idx = ++list_idx;
 		strcpy(my_list[idx].name, name);
 		list_init(&(my_list[idx].os_list));
-	} else if (strcmp(arg, "hashtable")==0) {
+	} else if (TYPE_IS_HASH) {
 		idx = ++hash_idx;
 		strcpy(my_hash[idx].name, name);
 		hash_init(&(my_hash[idx].os_hash), hhf, hlf, NULL);
-	} else if (strcmp(arg, "bitmap")==0) {
+	} else if (TYPE_IS_BITMAP) {
+		int num=0;
 		idx = ++bitmap_idx;
 		strcpy(my_bitmap[idx].name, name);
 		sscanf(GetArg(),"%d", &num);
@@ -127,53 +113,43 @@ void DoCreate() {
 }
 
 void DoDelete() {
-	char *arg = GetArg();
-	if (arg == NULL)
-		return ;
+	struct list *list_ptr = FindList(name);
+	if (list_ptr) {
+		IterateList(list_ptr, FreeListItem);
+	}
+	struct hash *hash_ptr = FindHash(name);
+	if (hash_ptr) {
+		hash_destroy(hash_ptr, haf_free_item);
+	}
+	struct bitmap *bitmap_ptr = FindBitmap(name);
+	if (bitmap_ptr) {
+		bitmap_destroy(bitmap_ptr);
+	}
 }
 
 void DoDumpdata() {
-	int idx=0;
-	char *arg = GetArg();
-	if (arg == NULL)
-		return ;
-	DumpList(FindList(arg));
-	DumpHash(FindHash(arg));
-	DumpBitmap(FindBitmap(arg));
+	DumpList(FindList(name));
+	DumpHash(FindHash(name));
+	DumpBitmap(FindBitmap(name));
 }
 
 void DoList() {
-	int idx, begin, end, num;
-	char *subcmd = GetArg();
-	char *arg1 = GetArg(), *arg2 = GetArg(), *arg3 = GetArg(), *arg4 = GetArg(), *arg5 = GetArg();
+	int idx, begin, end;
 	struct list * list_ptr, * list_ptr2;
 
-	// sub command
-	if (subcmd == NULL)
-		return ;
-	// argument 1
-	if (arg1 == NULL)
-		return ;
-	// check list name exsists
-	list_ptr = FindList(arg1);
-	if (list_ptr == NULL) 
-		return ;
-	if (strcmp(subcmd,"insert")==0) {
-		if (arg2 == NULL || arg3 == NULL)
-			return ;
-		idx = ToInt(arg2);
-		num = ToInt(arg3);
-		list_insert(list_index_of(list_ptr, idx), CreateListElem(num));
-	}
-	else if (strcmp(subcmd,"splice")==0) {
-		if (arg2 == NULL || arg3 == NULL || arg4 == NULL || arg5 == NULL)
-			return ;
-		list_ptr2 = FindList(arg3);
-		if (list_ptr2 == NULL)
-			return ;
-		idx = ToInt(arg2);
-		begin = ToInt(arg4);
-		end = ToInt(arg5);
+	list_ptr = FindList(name);
+	IF_NULL_EXIT(list_ptr);
+	if (SUBCMD("insert")) {
+		IF_NULL_EXIT(arg1 && arg2);
+		idx = ToInt(arg1);
+		list_insert(list_index_of(list_ptr, idx), CreateListElem(ToInt(arg2)));
+	} else if (SUBCMD("splice")) {
+		IF_NULL_EXIT(arg1 && arg2 && arg3 && arg4);
+		list_ptr2 = FindList(arg2);
+		IF_NULL_EXIT(list_ptr2);
+		idx = ToInt(arg1);
+		begin = ToInt(arg3);
+		end = ToInt(arg4);
 
 		if (idx < 0 || idx >= list_size(list_ptr))
 			return ;
@@ -187,142 +163,84 @@ void DoList() {
 				, list_index_of(list_ptr2, begin)
 				, list_index_of(list_ptr2, end)
 				);
-	}
-	else if (strcmp(subcmd,"push_front")==0) {
-		if (arg2 == NULL)
+	} else if (SUBCMD("push_front")) {
+		IF_NULL_EXIT(arg1);
+		list_push_front(list_ptr, CreateListElem(ToInt(arg1)));
+	} else if (SUBCMD("push_back")) {
+		IF_NULL_EXIT(arg1);
+		list_push_back(list_ptr, CreateListElem(ToInt(arg1)));
+	} else if (SUBCMD("remove")) {
+		IF_NULL_EXIT(arg1);
+		idx = ToInt(arg1);
+		if (idx < 0 || idx >= list_size(list_ptr))
 			return ;
-		list_push_front(list_ptr, CreateListElem(ToInt(arg2)));
-	}
-	else if (strcmp(subcmd,"push_back")==0) {
-		if (arg2 == NULL)
-			return ;
-		list_push_back(list_ptr, CreateListElem(ToInt(arg2)));
-	}
-	else if (strcmp(subcmd,"remove")==0) {
-		if (arg2 == NULL)
-			return ;
-		idx = ToInt(arg2);
-		if (idx < 0 || idx >= list_size(list_ptr)) {
-			printf("[remove index is not valid!!]\n");
-			return ;
-		}
 		list_remove(list_index_of(list_ptr, idx));
-	}
-	else if (strcmp(subcmd,"pop_front")==0) {
+	} else if (SUBCMD("pop_front")) {
 		list_pop_front(list_ptr);
-	}
-	else if (strcmp(subcmd,"pop_back")==0) {
+	} else if (SUBCMD("pop_back")) {
 		list_pop_back(list_ptr);
-	}
-	else if (strcmp(subcmd,"front")==0) {
-		printf("%d\n", GET_LIST_DATA(list_front(list_ptr)));
-	}
-	else if (strcmp(subcmd,"back")==0) {
-		printf("%d\n", GET_LIST_DATA(list_back(list_ptr)));
-	}
-	else if (strcmp(subcmd,"size")==0) {
-		printf("%d\n", list_size(list_ptr));
-	}
-	else if (strcmp(subcmd,"empty")==0) {
-		if (list_empty(list_ptr))
-			printf("true\n");
-		else
-			printf("false\n");
-	}
-	else if (strcmp(subcmd,"reverse")==0) {
+	} else if (SUBCMD("front")) {
+		PrintInt(GET_LIST_DATA(list_front(list_ptr)));
+	} else if (SUBCMD("back")) {
+		PrintInt(GET_LIST_DATA(list_back(list_ptr)));
+	} else if (SUBCMD("size")) {
+		PrintInt(list_size(list_ptr));
+	} else if (SUBCMD("empty")) {
+		PrintBool(list_empty(list_ptr));
+	} else if (SUBCMD("reverse")) {
 		list_reverse(list_ptr);
-	}
-	else if (strcmp(subcmd,"sort")==0) {
+	} else if (SUBCMD("sort")) {
 		list_sort(list_ptr, llf, NULL);
-	}
-	else if (strcmp(subcmd,"insert_ordered")==0) {
-		if (arg2 == NULL)
-			return ;
-		list_insert_ordered(list_ptr, CreateListElem(ToInt(arg2)), llf, NULL);
-	}
-	else if (strcmp(subcmd,"unique")==0) {
-		list_unique(list_ptr, FindList(arg2), llf, NULL);
-	}
-	else if (strcmp(subcmd,"max")==0) {
-		printf("%d\n", GET_LIST_DATA(list_max(list_ptr, llf, NULL)));
-	}
-	else if (strcmp(subcmd,"min")==0) {
-		printf("%d\n", GET_LIST_DATA(list_min(list_ptr, llf, NULL)));
-	}
-	else if (strcmp(subcmd,"swap")==0) {
-		if (arg2 == NULL || arg3 == NULL)
-			return ;
+	} else if (SUBCMD("insert_ordered")) {
+		IF_NULL_EXIT(arg1);
+		list_insert_ordered(list_ptr, CreateListElem(ToInt(arg1)), llf, NULL);
+	} else if (SUBCMD("unique")) {
+		list_unique(list_ptr, FindList(arg1), llf, NULL);
+	} else if (SUBCMD("max")) {
+		PrintInt(GET_LIST_DATA(list_max(list_ptr, llf, NULL)));
+	} else if (SUBCMD("min")) {
+		PrintInt(GET_LIST_DATA(list_min(list_ptr, llf, NULL)));
+	} else if (SUBCMD("swap")) {
+		IF_NULL_EXIT(arg1 && arg2);
 		list_swap(
-				list_index_of(list_ptr, ToInt(arg2))
-				, list_index_of(list_ptr, ToInt(arg3)));
-	}
-	else if (strcmp(subcmd,"shuffle")==0) {
+				list_index_of(list_ptr, ToInt(arg1))
+				, list_index_of(list_ptr, ToInt(arg2)));
+	} else if (SUBCMD("shuffle")) {
 		list_shuffle(list_ptr);
 	}
 }
 
 void DoHash() {
-	int num;
-	char *subcmd = GetArg();
-	char *arg1 = GetArg(), *arg2 = GetArg();
 	struct hash *hash_ptr;
 	struct hash_elem *elem_ptr;
 
-	// sub command
-	if (subcmd == NULL)
-		return ;
-	// argument 1
-	if (arg1 == NULL)
-		return ;
-	// check hash name exsists
-	hash_ptr = FindHash(arg1);
-	if (hash_ptr == NULL) 
-		return ;
-	if (strcmp(subcmd,"insert")==0) {
-		if (arg2 == NULL)
-			return ;
-		num = ToInt(arg2);
-		hash_insert(hash_ptr, CreateHashElem(num));
-	}
-	else if (strcmp(subcmd,"replace")==0) {
-		if (arg2 == NULL)
-			return ;
-		num = ToInt(arg2);
-		hash_replace(hash_ptr, CreateHashElem(num));
-	}
-	else if (strcmp(subcmd,"find")==0) {
-		if (arg2 == NULL)
-			return ;
-		num = ToInt(arg2);
-		elem_ptr = hash_find(hash_ptr, CreateHashElem(num));
-		if (elem_ptr == NULL)
-			return ;
-		printf("%d\n", GET_HASH_DATA(elem_ptr));
-	}
-	else if (strcmp(subcmd,"delete")==0) {
-		if (arg2 == NULL)
-			return ;
-		num = ToInt(arg2);
-		hash_delete(hash_ptr, CreateHashElem(num));
-	}
-	else if (strcmp(subcmd,"clear")==0) {
+	hash_ptr = FindHash(name);
+	IF_NULL_EXIT(hash_ptr);
+	if (SUBCMD("insert")) {
+		IF_NULL_EXIT(arg1);
+		hash_insert(hash_ptr, CreateHashElem(ToInt(arg1)));
+	} else if (SUBCMD("replace")) {
+		IF_NULL_EXIT(arg1);
+		hash_replace(hash_ptr, CreateHashElem(ToInt(arg1)));
+	} else if (SUBCMD("find")) {
+		IF_NULL_EXIT(arg1);
+		elem_ptr = hash_find(hash_ptr, CreateHashElem(ToInt(arg1)));
+		IF_NULL_EXIT(elem_ptr);
+		PrintInt(GET_HASH_DATA(elem_ptr));
+	} else if (SUBCMD("delete")) {
+		IF_NULL_EXIT(arg1);
+		hash_delete(hash_ptr, CreateHashElem(ToInt(arg1)));
+	} else if (SUBCMD("clear")) {
 		hash_clear(hash_ptr, haf);
-	}
-	else if (strcmp(subcmd,"size")==0) {
-		printf("%d\n", hash_size(hash_ptr));
-	}
-	else if (strcmp(subcmd,"empty")==0) {
-		if (hash_empty(hash_ptr))
-			printf("true\n");
-		else
-			printf("false\n");
-	}
-	else if (strcmp(subcmd,"apply")==0) {
-		if (arg2 == NULL)
-			return ;
-		if (strcmp(arg2, "square")==0) {
+	} else if (SUBCMD("size")) {
+		PrintInt(hash_size(hash_ptr));
+	} else if (SUBCMD("empty")) {
+		PrintBool(hash_empty(hash_ptr));
+	} else if (SUBCMD("apply")) {
+		IF_NULL_EXIT(arg1);
+		if (CMP(arg1, "square")) {
 			hash_apply(hash_ptr, haf_square);
-		} else if (strcmp(arg2, "triple")==0) {
+		} else if (CMP(arg1, "triple")) {
 			hash_apply(hash_ptr, haf_triple);
 		} else {
 			hash_apply(hash_ptr, haf);
@@ -331,172 +249,130 @@ void DoHash() {
 }
 
 void DoBitmap() {
-	int num;
-	char *subcmd = GetArg();
-	char *arg1 = GetArg(), *arg2 = GetArg(), *arg3 = GetArg(), *arg4 = GetArg();
 	struct bitmap *bitmap_ptr;
-	struct hash_elem *elem_ptr;
-	bool value;
 
-	// sub command
-	if (subcmd == NULL)
-		return ;
-	// argument 1
-	if (arg1 == NULL)
-		return ;
-	// check bitmap name exsists
-	bitmap_ptr = (FindBitmap(arg1));
-	if (bitmap_ptr == NULL) 
-		return ;
-	if (strcmp(subcmd,"size")==0) {
-		printf("%d\n", bitmap_size(bitmap_ptr));
-	}
-	else if (strcmp(subcmd,"set")==0) {
-		if (arg2 == NULL || arg3 == NULL)
-			return ;
-		bitmap_set(bitmap_ptr, ToInt(arg2), ToBool(arg3));
-	}
-	else if (strcmp(subcmd,"mark")==0) {
-		if (arg2 == NULL)
-			return ;
-		bitmap_mark(bitmap_ptr, ToInt(arg2));
-	}
-	else if (strcmp(subcmd,"reset")==0) {
-		if (arg2 == NULL)
-			return ;
-		bitmap_reset(bitmap_ptr, ToInt(arg2));
-	}
-	else if (strcmp(subcmd,"flip")==0) {
-		if (arg2 == NULL)
-			return ;
-		bitmap_flip(bitmap_ptr, ToInt(arg2));
-	}
-	else if (strcmp(subcmd,"test")==0) {
-		if (arg2 == NULL)
-			return ;
-		PrintBool(bitmap_test(bitmap_ptr, ToInt(arg2)));
-	}
-	else if (strcmp(subcmd,"set_all")==0) {
-		if (arg2 == NULL)
-			return ;
-		bitmap_set_all(bitmap_ptr, ToBool(arg2));
-	}
-	else if (strcmp(subcmd,"set_multiple")==0) {
-		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
-			return ;
-		bitmap_set_multiple(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4));
-	}
-	else if (strcmp(subcmd,"count")==0) {
-		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
-			return ;
-		PrintSizeT(bitmap_count(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4)));
-	}
-	else if (strcmp(subcmd,"contains")==0) {
-		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
-			return ;
-		PrintBool(bitmap_contains(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4)));
-	}
-	else if (strcmp(subcmd,"any")==0) {
-		if (arg2 == NULL || arg3 == NULL)
-			return ;
-		PrintBool(bitmap_any(bitmap_ptr, ToInt(arg2), ToInt(arg3)));
-	}
-	else if (strcmp(subcmd,"none")==0) {
-		if (arg2 == NULL || arg3 == NULL)
-			return ;
-		PrintBool(bitmap_none(bitmap_ptr, ToInt(arg2), ToInt(arg3)));
-	}
-	else if (strcmp(subcmd,"all")==0) {
-		if (arg2 == NULL || arg3 == NULL)
-			return ;
-		PrintBool(bitmap_all(bitmap_ptr, ToInt(arg2), ToInt(arg3)));
-	}
-	else if (strcmp(subcmd,"scan")==0) {
-		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
-			return ;
-		PrintSizeT(bitmap_scan(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4)));
-	}
-	else if (strcmp(subcmd,"scan_and_flip")==0) {
-		if (arg2 == NULL || arg3 == NULL || arg4 == NULL)
-			return ;
-		PrintSizeT(bitmap_scan_and_flip(bitmap_ptr, ToInt(arg2), ToInt(arg3), ToBool(arg4)));
-	}
-	else if (strcmp(subcmd,"dump")==0) {
+	bitmap_ptr = FindBitmap(name);
+	IF_NULL_EXIT(bitmap_ptr);
+	if (SUBCMD("size")) {
+		PrintInt(bitmap_size(bitmap_ptr));
+	} else if (SUBCMD("set")) {
+		IF_NULL_EXIT(arg1 && arg2);
+		bitmap_set(bitmap_ptr, ToInt(arg1), ToBool(arg2));
+	} else if (SUBCMD("mark")) {
+		IF_NULL_EXIT(arg1);
+		bitmap_mark(bitmap_ptr, ToInt(arg1));
+	} else if (SUBCMD("reset")) {
+		IF_NULL_EXIT(arg1);
+		bitmap_reset(bitmap_ptr, ToInt(arg1));
+	} else if (SUBCMD("flip")) {
+		IF_NULL_EXIT(arg1);
+		bitmap_flip(bitmap_ptr, ToInt(arg1));
+	} else if (SUBCMD("test")) {
+		IF_NULL_EXIT(arg1);
+		PrintBool(bitmap_test(bitmap_ptr, ToInt(arg1)));
+	} else if (SUBCMD("set_all")) {
+		IF_NULL_EXIT(arg1);
+		bitmap_set_all(bitmap_ptr, ToBool(arg1));
+	} else if (SUBCMD("set_multiple")) {
+		IF_NULL_EXIT(arg1 && arg2 && arg3);
+		bitmap_set_multiple(bitmap_ptr, ToInt(arg1), ToInt(arg2), ToBool(arg3));
+	} else if (SUBCMD("count")) {
+		IF_NULL_EXIT(arg1 && arg2 && arg3);
+		PrintSizeT(bitmap_count(bitmap_ptr, ToInt(arg1), ToInt(arg2), ToBool(arg3)));
+	} else if (SUBCMD("contains")) {
+		IF_NULL_EXIT(arg1 && arg2 && arg3);
+		PrintBool(bitmap_contains(bitmap_ptr, ToInt(arg1), ToInt(arg2), ToBool(arg3)));
+	} else if (SUBCMD("any")) {
+		IF_NULL_EXIT(arg1 && arg2);
+		PrintBool(bitmap_any(bitmap_ptr, ToInt(arg1), ToInt(arg2)));
+	} else if (SUBCMD("none")) {
+		IF_NULL_EXIT(arg1 && arg2);
+		PrintBool(bitmap_none(bitmap_ptr, ToInt(arg1), ToInt(arg2)));
+	} else if (SUBCMD("all")) {
+		IF_NULL_EXIT(arg1 && arg2);
+		PrintBool(bitmap_all(bitmap_ptr, ToInt(arg1), ToInt(arg2)));
+	} else if (SUBCMD("scan")) {
+		IF_NULL_EXIT(arg1 && arg2 && arg3);
+		PrintSizeT(bitmap_scan(bitmap_ptr, ToInt(arg1), ToInt(arg2), ToBool(arg3)));
+	} else if (SUBCMD("scan_and_flip")) {
+		IF_NULL_EXIT(arg1 && arg2 && arg3);
+		PrintSizeT(bitmap_scan_and_flip(bitmap_ptr, ToInt(arg1), ToInt(arg2), ToBool(arg3)));
+	} else if (SUBCMD("dump")) {
 		bitmap_dump(bitmap_ptr);
-	}
-	else if (strcmp(subcmd,"expand")==0) {
+	} else if (SUBCMD("expand")) {
+		IF_NULL_EXIT(arg1);
+		bitmap_expand(bitmap_ptr, ToInt(arg1));
 	}
 }
 
 struct list * FindList(char *name) {
 	int i=0;
-	if (name == NULL)
-		return NULL;
+	IF_NULL_EXIT(name);
 	for (i=0; i<list_idx+1; i++) {
-		if (strcmp(name, my_list[i].name)==0)
+		if (CMP(name, my_list[i].name))
 			return &(my_list[i].os_list);
 	}
-	// debug
-	//	printf("Np such list!\n");
 	return NULL;
 }
 
 struct hash * FindHash(char *name) {
 	int i=0;
-	if (name == NULL)
-		return NULL;
+	IF_NULL_EXIT(name);
 	for (i=0; i<hash_idx+1; i++) {
-		if (strcmp(name, my_hash[i].name)==0)
+		if (CMP(name, my_hash[i].name))
 			return &(my_hash[i].os_hash);
 	}
-	// debug
-	//	printf("Np such hash!\n");
 	return NULL;
 }
 
 struct bitmap * FindBitmap(char *name) {
 	int i=0;
-	if (name == NULL)
-		return NULL;
+	IF_NULL_EXIT(name);
 	for (i=0; i<bitmap_idx+1; i++) {
-		if (strcmp(name, my_bitmap[i].name)==0)
+		if (CMP(name, my_bitmap[i].name))
 			return (my_bitmap[i].os_bitmap);
 	}
-	// debug
-	//	printf("Np such bitmap!\n");
 	return NULL;
 }
 
 void DumpList(struct list *target) {
-	struct list_elem *e;
-	if (target == NULL) 
-		return ;
-	for(e = list_begin(target); e != list_end(target); e = list_next(e)){
-		printf("%d ", GET_LIST_DATA(e));
-	}
+	IF_NULL_EXIT(target);
+	IterateList(target, PrintListItem);
 	printf("\n");
 }
 
 void DumpHash(struct hash *target) {
-	if (target == NULL) 
-		return ;
+	IF_NULL_EXIT(target);
 	struct hash_iterator i;
 	hash_first(&i, target);
 	while (hash_next(&i)) {
-		struct hash_item *item = hash_entry (hash_cur(&i), struct hash_item, elem);
-		printf("%d ", item->data);
+		printf("%d ", GET_HASH_DATA(hash_cur(&i)));
 	}
 	printf("\n");
 }
 
 void DumpBitmap(struct bitmap *target) {
-	if (target == NULL) 
-		return ;
+	IF_NULL_EXIT(target);
 	int  i=0;
 	for (i=0; i < bitmap_size(target); i++) {
 		printf("%d", bitmap_test(target, i)?1:0);
 	}
 	printf("\n");
+}
+
+void IterateList(struct list *target, list_iterate_func *func) {
+	struct list_elem *e;
+	for(e = list_begin(target); e != list_end(target); e = list_next(e)){
+		func(e);
+	}
+}
+
+void PrintListItem(struct list_elem *e) {
+	printf("%d ", GET_LIST_DATA(e));
+}
+
+void FreeListItem(struct list_elem *e) {
+	free(GET_LIST_ITEM(e));
 }
 
 struct list_elem * CreateListElem(int data) {
@@ -538,10 +414,35 @@ void haf_triple (struct hash_elem *e, void *aux) {
 	int *data = &(GET_HASH_DATA(e));
 	*data = (*data) * (*data) * (*data);
 }
+void haf_free_item (struct hash_elem *e, void *aux) {
+	free(GET_HASH_ITEM(e));
+}
 
-void FreeAll() {
-	int i=0;
-	for (i=0; i<bitmap_idx; i++) {
-		free(my_bitmap[i].os_bitmap);
-	}
+void PrintInt(int d) {
+	printf("%d\n", d);
+}
+void PrintBool(bool bl) {
+	if (bl)
+		printf("true\n");
+	else
+		printf("false\n");
+}
+
+void PrintSizeT(size_t st) {
+	if (st == SIZE_MAX)
+		printf("4294967295\n");
+	else
+		printf("%zu\n", st);
+}
+
+int ToInt(char *str) {
+	int num;
+	sscanf(str, "%d", &num);
+	return num;
+}
+
+bool ToBool(char *str) {
+	if (CMP(str, "true"))
+		return true;
+	return false;
 }
