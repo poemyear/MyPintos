@@ -514,20 +514,31 @@ list_swap (struct list_elem *a, struct list_elem *b)
 
   ASSERT (a != NULL);
   ASSERT (b != NULL);
- 
-  a->prev->next = b;
-  a->next->prev = b;
-  b->next->prev = a;
-  b->prev->next = a;
-  
-  tmp = a->next;
-  a->next = b->next;
-  b->next = tmp;
 
-  tmp = a->prev;
-  a->prev = b->prev;
-  b->prev = tmp;
-  
+  if (a==b || a->prev == NULL || a->next == NULL || b->prev == NULL || b->next == NULL)
+	  return ;
+  if (b->next == a) {
+	  swap(&a, &b);
+  }
+  if (a->next == b) {
+	  a->next = b->next;
+	  b->prev = a->prev;
+	  b->next->prev = a;
+	  a->prev->next = b;
+	  b->next = a;
+	  a->prev = b;
+  } else {
+	  a->prev->next = b;
+	  a->next->prev = b;
+	  b->prev->next = a;
+	  b->next->prev = a;
+	  tmp = b->next;
+	  b->next = a->next;
+	  a->next = tmp;
+	  tmp = a->prev;
+	  a->prev = b->prev;
+	  b->prev = tmp;
+  }
 }
 
 /* Shuffle all elements randomly. */
@@ -537,8 +548,15 @@ list_shuffle (struct list *list)
   ASSERT (list != NULL);
   if (list_empty (list))
 	  return;
-  list_swap(list_begin(list), list_end(list));
+  srand(time(NULL));
+  int i, size, r;
+  size = list_size(list);
+  for (i=0; i<2; i++) {
+	r = rand()%size;
+	list_swap(list_index_of(list, i), list_index_of(list, r));
+  }
 }
+
 
 /* Returns the element in LIST with the largest value according
    to LESS given auxiliary data AUX.  If there is more than one
