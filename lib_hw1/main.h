@@ -21,6 +21,8 @@
 #define MAX_NAME_LENGTH   		30
 #define MAX_STRUCTURE_CNT		10
 
+#define INT_32_MAX_VALUE		4294967295
+
 typedef unsigned long elem_type;
 struct bitmap
 {

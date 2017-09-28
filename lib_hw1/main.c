@@ -380,8 +380,9 @@ struct list_elem * CreateListElem(int data) {
 }
 
 bool llf (const struct list_elem *a, const struct list_elem *b, void *aux) {
-	if (GET_LIST_DATA(a) >= GET_LIST_DATA(b) )return false;
-	else return true;
+	if (GET_LIST_DATA(a) >= GET_LIST_DATA(b)) 
+		return false;
+	return true;
 }
 
 struct hash_elem * CreateHashElem(int data) {
@@ -428,9 +429,8 @@ void PrintBool(bool bl) {
 
 void PrintSizeT(size_t st) {
 	if (st == SIZE_MAX)
-		printf("4294967295\n");
-	else
-		printf("%zu\n", st);
+		st = INT_32_MAX_VALUE;
+	printf("%zu\n", st);
 }
 
 int ToInt(char *str) {
