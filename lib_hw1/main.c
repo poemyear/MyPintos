@@ -60,20 +60,17 @@ int GetCommand(char *cmd) {
 	if (CMD("create")) {
 		type = GetArg();
 		name = GetArg();
-		if (!type || !name)
-			return -1;
+		IF_NULL_EXIT_INT(type && name);
 		return CREATE;
 	}
 	if (CMD("delete")) {
 		name = GetArg();
-		if (name == NULL)
-			return -1;
+		IF_NULL_EXIT_INT(name);
 		return DELETE;
 	}
 	if (CMD("dumpdata")) {
 		name = GetArg();
-		if (name == NULL)
-			return -1;
+		IF_NULL_EXIT_INT(name);
 		return DUMPDATA;
 	}
 	subcmd = GetArg();
@@ -82,8 +79,7 @@ int GetCommand(char *cmd) {
 	arg2 = GetArg();
 	arg3 = GetArg();
 	arg4 = GetArg();
-	if (!subcmd || !name)
-		return -1;
+	IF_NULL_EXIT_INT(subcmd && name);
 	if (CMD("list"))
 		return LIST;
 	if (CMD("hash"))
@@ -420,6 +416,7 @@ void haf_free_item (struct hash_elem *e, void *aux) {
 void PrintInt(int d) {
 	printf("%d\n", d);
 }
+
 void PrintBool(bool bl) {
 	if (bl)
 		printf("true\n");

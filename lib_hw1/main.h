@@ -56,6 +56,8 @@ int bitmap_idx=-1;
 
 #define IF_NULL_EXIT(VARS_TO_BE_NOT_NULL) \
 	if (!(VARS_TO_BE_NOT_NULL))	return
+#define IF_NULL_EXIT_INT(VARS_TO_BE_NOT_NULL) \
+	if (!(VARS_TO_BE_NOT_NULL))	return -1
 
 #define CMP(VAR, STR) \
 	strcmp(VAR, STR)==0
