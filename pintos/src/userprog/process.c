@@ -222,7 +222,7 @@ construct_ESP (void **esp, char **argv, int argc)
 	*((int *)(*esp -= sizeof(void *))) = 0;
 
 	// debug
-	hex_dump(*esp, *esp, (size_t)PHYS_BASE-(size_t)*esp, true);
+	hex_dump((int)*esp, *esp, (size_t)PHYS_BASE-(size_t)*esp, true);
 }
 
 /* Values for p_type.  See [ELF1] 2-3. */
@@ -245,7 +245,7 @@ static bool validate_segment (const struct Elf32_Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
                           bool writable);
-#define DELIM  " \t\s"
+#define DELIM  " \t\n\0"
 
 /* Loads an ELF executable from FILE_NAME into the current thread.
    Stores the executable's entry point into *EIP
