@@ -88,6 +88,7 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
+  while(1){ }
   return -1;
 }
 
@@ -180,6 +181,50 @@ struct Elf32_Phdr
     Elf32_Word p_align;
   };
 
+#define DEBUG printf("\n                           ");
+void 
+construct_ESP (void **esp, char **argv, int argc)
+{
+	if (argc > 0)  {
+		int top = (int)*esp;
+		int i, len, total_len=0;
+		// grows downword
+		for (i=0; i<argc; i++) {
+			char *curr_argv = argv[argc-i-1];
+			len = strlen(curr_argv) + 1;
+			memcpy (*esp -= len, curr_argv, len);
+			total_len += len;
+		}
+
+		// word align
+		while( total_len++ %4 != 0) {
+			*((uint8_t *)(*esp -= sizeof(uint8_t))) = (uint8_t) 0;
+		}
+
+		// argv[argc] 0
+		*((int *)(*esp -= sizeof(char *))) = 0;
+
+		// argv[argc-1 ~ 0] 's addr
+		for (i=0; i<argc; i++) {
+			char *curr_argv = argv[argc-i-1];
+			len = strlen(curr_argv) + 1;
+			*((int *)(*esp -= sizeof(char *))) = (top -= len);
+		}
+
+		// argv addr
+		*((int *)(*esp -= sizeof(char **))) = (int) *esp + sizeof(char **);
+	}
+
+	// argc
+	*((int *)(*esp -= sizeof(int))) = argc;
+
+	// return addr
+	*((int *)(*esp -= sizeof(void *))) = 0;
+
+	// debug
+	hex_dump(*esp, *esp, (size_t)PHYS_BASE-(size_t)*esp, true);
+}
+
 /* Values for p_type.  See [ELF1] 2-3. */
 #define PT_NULL    0            /* Ignore. */
 #define PT_LOAD    1            /* Loadable segment. */
@@ -200,6 +245,7 @@ static bool validate_segment (const struct Elf32_Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
                           bool writable);
+#define DELIM  " \t\s"
 
 /* Loads an ELF executable from FILE_NAME into the current thread.
    Stores the executable's entry point into *EIP
@@ -220,6 +266,19 @@ load (const char *file_name, void (**eip) (void), void **esp)
   if (t->pagedir == NULL) 
     goto done;
   process_activate ();
+
+  // tokenizing file_name to file_name + args[n];
+  char *argv[50];
+  int argc=0;
+  char *tok, *next;
+  strtok_r (file_name, DELIM, &next); 
+  while (tok = strtok_r (NULL, DELIM, &next)){
+	  argv[argc] = (char*) malloc (sizeof(char) * (strlen(tok)+1));
+	  strlcpy (argv[argc++], tok, strlen(tok)+1);
+  } 
+  for (i=0; i<argc; i++) 
+	  printf("[%s], ", argv[i]);
+  printf("\n");
 
   /* Open executable file. */
   file = filesys_open (file_name);
@@ -304,6 +363,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
   /* Set up stack. */
   if (!setup_stack (esp))
     goto done;
+
+  /* push arguments into stack. */
+  construct_ESP (esp, argv, argc);
 
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
