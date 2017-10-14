@@ -19,6 +19,9 @@ enum
     SYS_TELL,                   /* Report current position in a file. */
     SYS_CLOSE,                  /* Close a file. */
 
+    SYS_FIBONACCI,              /* Calculate N th Fibonacci. */
+    SYS_SUM_OF_FOUR,            /* Calculate sum of 4 int values*/
+
     /* Project 3 and optionally project 4. */
     SYS_MMAP,                   /* Map a file into memory. */
     SYS_MUNMAP,                 /* Remove a memory mapping. */

@@ -5,6 +5,8 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
+#include <user/syscall.h>
+
 static void syscall_handler (struct intr_frame *);
 
 void
@@ -31,3 +33,25 @@ syscall_handler (struct intr_frame *f UNUSED)
   printf ("system call!\n");
   thread_exit ();
 }
+
+
+
+int 
+pibonacci (int n) 
+{
+	int n1 = 1, n2 = 1, tmp, i;
+	for (i=0; i<n; i++) {
+		tmp = n2;
+		n2 += n1;
+		n1 = tmp;
+	}
+	return n2;
+}
+
+int 
+sum_of_four_integers (int a, int b, int c, int d) 
+{
+	return a+b+c+d;
+}
+
+
