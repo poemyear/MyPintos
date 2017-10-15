@@ -5,6 +5,7 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "devices/shutdown.h"
+#include "threads/vaddr.h"
 
 // #include <user/syscall.h>
 
@@ -31,6 +32,48 @@ syscall_exit (int exitstatus)
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
+  // compare esep
+  int SYS_STATUS = ((int*)f->esp)[0];
+  int *esp = ((int *)f->esp)[0];
+  uint8_t *eax = f->eax;
+  printf ("PHYS_BASE: [%d]\n", PHYS_BASE);
+  printf ("esp: [%d]\n", *esp);
+  printf ("eax: [%d]\n", *eax);
+
+  if (!(*esp < PHYS_BASE)) {
+	printf ("invalid access\n");
+	  return;
+  }
+
+  switch (SYS_STATUS) {
+	  case SYS_HALT:
+		  printf ("SYS_HALT\n");
+		  break;
+	  case SYS_EXIT:
+		  printf ("SYS_EXIT\n");
+		  break;
+	  case SYS_EXEC:
+		  printf ("SYS_EXEC\n");
+		  break;
+	  case SYS_WAIT:
+		  printf ("SYS_WAIT\n");
+		  break;
+	  case SYS_READ:
+		  printf ("SYS_READ\n");
+		  break;
+	  case SYS_WRITE:
+		  printf ("SYS_WRITE\n");
+		  break;
+	  case SYS_FIBONACCI:
+		  printf ("SYS_FIBONACCI\n");
+		  break;
+	  case SYS_SUM_OF_FOUR:
+		  printf ("SYS_SUM_OF_FOUR\n");
+		  break;
+	  default:
+		  printf ("NONE OF ABOVE\n");
+		  break;
+  }
   printf ("system call!\n");
   thread_exit ();
 }
