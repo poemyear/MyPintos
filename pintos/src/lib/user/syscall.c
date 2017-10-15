@@ -204,11 +204,11 @@ inumber (int fd)
 int
 pibonacci (int n)
 {
-	  return syscall1 (SYS_FIBONACCI, n);
+  return syscall1 (SYS_FIBONACCI, n);
 }
 
 int sum_of_four_integers (int a, int b, int c, int d)
 {
-	  return syscall4 (SYS_SUM_OF_FOUR, a, b, c, d);
+  return syscall4 (SYS_SUM_OF_FOUR, a, b, c, d);
 }
 
