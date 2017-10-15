@@ -29,53 +29,123 @@ syscall_exit (int exitstatus)
   thread_exit ();
 }
 
+bool is_valid(void *esp) {
+  if (!is_user_vaddr(esp) || !pagedir_get_page(thread_current()->pagedir, esp)) {
+	  printf ("is not user vaddr or fail to get page\n");
+	  return false;
+  }
+	  printf ("is user vaddr\n");
+  return true;
+}
+
 static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
   // compare esep
-  int SYS_STATUS = ((int*)f->esp)[0];
   void *esp = f->esp;
   uint8_t *eax = f->eax;
+  int SYS_STATUS = ((int*)esp)[0];
 
+  printf ("PHYS_BASE: [%x]\n", PHYS_BASE);
 
-  printf("is_user_vaddr: %d\n", is_user_vaddr(esp));
+  hex_dump((int *)esp, esp, (size_t)PHYS_BASE-(size_t)esp, true);
 
-  printf ("PHYS_BASE: [%d]\n", PHYS_BASE);
+  if (!is_valid(esp))
+	  thread_exit ();
 
-  if (!pagedir_get_page (thread_current()->pagedir, esp)) {
-	  printf ("fail to get page\n");
-  } else {
-	  printf ("success to get page\n");
-  }
+   int i=0;
+   for (i=0; i< 16; i++) {
+	   printf("esp[%d]=%d, %x, %c\n", i, ((int *)esp)[i], ((int *)esp)[i], ((char *)esp)[i]);
+   }
 
-  switch (SYS_STATUS) {
-	  case SYS_HALT:
-		  printf ("SYS_HALT\n");
-		  break;
-	  case SYS_EXIT:
-		  printf ("SYS_EXIT\n");
-		  break;
-	  case SYS_EXEC:
-		  printf ("SYS_EXEC\n");
-		  break;
-	  case SYS_WAIT:
-		  printf ("SYS_WAIT\n");
-		  break;
-	  case SYS_READ:
-		  printf ("SYS_READ\n");
-		  break;
-	  case SYS_WRITE:
-		  printf ("SYS_WRITE\n");
-		  break;
-	  case SYS_FIBONACCI:
-		  printf ("SYS_FIBONACCI\n");
-		  break;
-	  case SYS_SUM_OF_FOUR:
-		  printf ("SYS_SUM_OF_FOUR\n");
-		  break;
-	  default:
-		  printf ("NONE OF ABOVE\n");
-		  break;
+   // user program's stack pointer seems stored in 
+
+   int *args = (int *)esp;
+   switch (SYS_STATUS) {
+	   case SYS_HALT:
+		   /*
+			  syscall0
+			  SYS_HALT
+			*/
+		   printf ("SYS_HALT\n");
+		   break;
+	   case SYS_EXIT:
+		   /*
+			  syscall1 - SYS_NUM, arg0
+			  SYS_EXIT, int status
+			*/
+		   printf ("SYS_EXIT\n");
+		   thread_exit ();
+		   break;
+	   case SYS_EXEC:
+		   /*
+			  syscall1 -	SYS_NUM, arg0
+			  SYS_EXEC, const char * file
+			*/
+		   printf ("SYS_EXEC\n");
+		   break;
+	   case SYS_WAIT:
+		   /*
+			  syscall1 - SYS_NUM, arg0
+			  SYS_WAIT, pid_t pid
+			*/
+		   printf ("SYS_WAIT\n");
+		   break;
+	   case SYS_READ:
+		   /*
+			  syscall3 - SYS_NUM, arg0, arg1, arg2
+			  SYS_READ, int fd, const void* buffer, unsigned size
+			*/
+		   printf ("SYS_READ\n");
+		   break;
+
+	   case SYS_WRITE:
+		   /*
+			  syscall3 - SYS_NUM, arg0, arg1, arg2
+			  SYS_WRITE, int fd, const void* buffer, unsigned size
+			*/
+		   printf ("SYS_WRITE\n"); 
+		   int fd = ((int *)esp)[1];
+		   const char *buffer = (const char *)((int *)esp)[2];
+		   unsigned size = (unsigned)((int *)esp)[3];
+		   printf("FD=[%d], buffer=[%s], size=[%d]\n", fd, buffer, size);
+		   if (!is_valid(buffer))
+			   thread_exit ();
+		   switch (fd) {
+			   case STDOUT_FILENO:
+				   putbuf(buffer, size);
+				   *eax = size;
+				   break;
+			   case STDIN_FILENO:
+			   default:
+				   *eax = -1;
+				   break;
+		   }
+		   break;
+	   case SYS_FIBONACCI:
+		   /*
+			  syscall1 -	SYS_NUM, arg0
+			  SYS_FIBO, int a
+			*/
+		   printf ("SYS_FIBONACCI\n");
+		   int fibo = pibonacci (args[1]);
+		   printf ("SYS_FIBONACCI: [%d]\n", fibo);
+		   *eax = fibo;
+		   break;
+	   case SYS_SUM_OF_FOUR:
+		   /*
+			  syscall4 - SYS_NUM, arg0, arg1, arg2, arg3
+			  SYS_SUM_OF_FOUR, int a, int b, int c, int d
+			*/
+		   
+		   printf ("SYS_SUM_OF_FOUR\n");
+		   int sum = sum_of_four_integers(args[1], args[2], args[3], args[4]);
+		   printf ("SYS_SUM_OF_FOUR: [%d]\n", sum);
+		   *eax = sum;
+		   break;
+	   default:
+		   printf ("NONE OF ABOVE\n");
+		   break;
   }
   printf ("system call!\n");
   thread_exit ();
@@ -194,7 +264,7 @@ int
 pibonacci (int n) 
 {
 	int n1 = 1, n2 = 1, tmp, i;
-	for (i=0; i<n; i++) {
+	for (i=0; i<n-2; i++) {
 		tmp = n2;
 		n2 += n1;
 		n1 = tmp;
