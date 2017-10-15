@@ -34,15 +34,18 @@ syscall_handler (struct intr_frame *f UNUSED)
 {
   // compare esep
   int SYS_STATUS = ((int*)f->esp)[0];
-  int *esp = ((int *)f->esp)[0];
+  void *esp = f->esp;
   uint8_t *eax = f->eax;
-  printf ("PHYS_BASE: [%d]\n", PHYS_BASE);
-  printf ("esp: [%d]\n", *esp);
-  printf ("eax: [%d]\n", *eax);
 
-  if (!(*esp < PHYS_BASE)) {
-	printf ("invalid access\n");
-	  return;
+
+  printf("is_user_vaddr: %d\n", is_user_vaddr(esp));
+
+  printf ("PHYS_BASE: [%d]\n", PHYS_BASE);
+
+  if (!pagedir_get_page (thread_current()->pagedir, esp)) {
+	  printf ("fail to get page\n");
+  } else {
+	  printf ("success to get page\n");
   }
 
   switch (SYS_STATUS) {
