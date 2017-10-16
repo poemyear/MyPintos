@@ -5,7 +5,6 @@
 #define INT_ARG(i)	\
 	atoi(argv[i+1])
 int main(int argc, char *argv[]) {
-	printf("sum\n");
 	if( argc != 5 ){
 		printf("Usage : ./sum [num 1] [num 2] [num 3] [num 4]\n");
 		exit(1);
