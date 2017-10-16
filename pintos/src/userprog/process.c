@@ -271,7 +271,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   char *argv[50];
   int argc=0;
   char *tok, *next;
-  strtok_r (file_name, DELIM, &next); 
+  argv[argc++] = strtok_r (file_name, DELIM, &next); 
   while (tok = strtok_r (NULL, DELIM, &next)){
 	  argv[argc] = (char*) malloc (sizeof(char) * (strlen(tok)+1));
 	  strlcpy (argv[argc++], tok, strlen(tok)+1);
